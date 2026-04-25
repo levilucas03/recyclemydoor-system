@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class AttributesOpeningSeeder extends Seeder
+class AttributesKeySeeder extends Seeder
 {
     /**
      * Run the database seeds.
