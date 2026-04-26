@@ -115,6 +115,17 @@
                 </div>
             </Link>
         </div>
+        <!-- Pagination -->
+        <div class="mt-4 flex gap-2">
+            <Link
+                v-for="link in purchases.links"
+                :key="link.label"
+                :href="link.url || ''"
+                v-html="link.label"
+                class="px-3 py-1 border rounded"
+                :class="{ 'bg-gray-200': link.active }"
+            />
+        </div>
     </div>
 </template>
 

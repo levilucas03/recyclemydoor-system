@@ -27,7 +27,7 @@ class PurchaseController extends Controller
             ->withCount('products')
             ->orderBy('purchase_date', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate(2);
+            ->paginate(15);
 
         return Inertia::render('purchase/Index', [
             'purchases' => $purchases,
