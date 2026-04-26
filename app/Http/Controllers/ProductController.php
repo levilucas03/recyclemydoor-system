@@ -62,7 +62,16 @@ class ProductController extends Controller
             'categories',
             'purchase.contact',
             'primaryImage',
+            'prices'
+            
         ]); 
+
+        // Transform prices → key by type
+        // $prices = $product->prices->keyBy('type')->map(function ($price) {
+        //     return [
+        //         'price' => $price->price,
+        //     ];
+        // })->toArray();
 
         $groups = ['brand', 'material', 'colour', 'condition', 'opening', 'configuration'];
 
@@ -97,6 +106,9 @@ class ProductController extends Controller
         ]);
 
 
+        // dd($product->getPrice('purchase'));
+
+
         return Inertia::render('product/Edit', [
             'product' => $product,
             'brands' => $brands,
@@ -108,6 +120,7 @@ class ProductController extends Controller
             'parts' => $parts,
             'categories' => $categories,
             'statuses' => $statuses,
+            // 'prices' => $prices,
         ]);
     }
 
@@ -133,6 +146,11 @@ class ProductController extends Controller
             'opening_id' => 'nullable|exists:attributes,id',
             'configuration_id' => 'nullable|exists:attributes,id',
             'status' => ['required', Rule::in(array_column(ProductStatus::cases(), 'value'))],
+
+            'website_price' => 'nullable|numeric',
+            'sold_price' => 'nullable|numeric',
+            'purchase_price' => 'nullable|numeric',
+            'initial_price' => 'nullable|numeric',
         ]);
 
 
@@ -154,6 +172,11 @@ class ProductController extends Controller
             $request->configuration_id,
         ]);
 
+        $this->savePrice($product, 'website', $request->website_price);
+        $this->savePrice($product, 'sold', $request->sold_price);
+        $this->savePrice($product, 'purchase', $request->purchase_price);
+        $this->savePrice($product, 'initial', $request->initial_price);
+
         $parts = $request->part_ids ?? [];
 
         $product->attributes()->sync([
@@ -165,26 +188,34 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
 
-        // delete old primary image (optional but recommended)
-        $oldImage = $product->images()->where('is_primary', true)->first();
+            // delete old primary image (optional but recommended)
+            $oldImage = $product->images()->where('is_primary', true)->first();
 
-        if ($oldImage) {
-            Storage::disk('public')->delete($oldImage->path);
-            $oldImage->delete();
+            if ($oldImage) {
+                Storage::disk('public')->delete($oldImage->path);
+                $oldImage->delete();
+            }
+
+            // store new image
+            $path = $request->file('image')->store('products', 'public');
+
+            // save to DB
+            $product->images()->create([
+                'path' => $path,
+                'is_primary' => true,
+                'sort_order' => 0,
+            ]);
         }
-
-        // store new image
-        $path = $request->file('image')->store('products', 'public');
-
-        // save to DB
-        $product->images()->create([
-            'path' => $path,
-            'is_primary' => true,
-            'sort_order' => 0,
-        ]);
     }
 
+    protected function savePrice(Product $product, $type, $value)
+    {
+        if ($value === null) return;
 
+        $product->prices()->updateOrCreate(
+            ['type' => $type],
+            ['price' => $value]
+        );
     }
 // to do: attributes saving have it in a seperate function.
     public function store(Request $request)

@@ -64,6 +64,11 @@ class Product extends Model
         return $this->prices->firstWhere('type', 'purchase')?->price;
     }
 
+    public function getPrice($type)
+    {
+        return $this->prices->where('type', $type)->first()?->price;
+    }
+
     public function getAttributeIdForGroup(string $groupSlug): ?int
     {
         $attribute = $this->attributes

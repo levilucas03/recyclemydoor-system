@@ -5,6 +5,10 @@ import { debounce } from 'lodash'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import GenerateTitle from '@/components/GenerateTitle.vue'
 
+const getPrice = (type) => {
+    return props.product.prices.find(p => p.type === type)?.price ?? ''
+}
+
 // ---------------------
 // PROPS
 // ---------------------
@@ -42,10 +46,20 @@ const form = useForm({
     configuration_id: props.product.configuration_id,
     category_ids: props.product.categories?.map(c => c.id) || [],
 
+
+    purchase_price: getPrice('purchase'),
+    website_price: getPrice('website'),
+    sold_price: getPrice('sold'),
+    initial_price: getPrice('initial'),
+
     part_ids: props.product.attributes
         ?.filter(attr => attr.group?.slug === 'parts')
         .map(attr => attr.id) || [],
 })
+
+
+
+// console.log(props.product.purchase_price);
 
 // ---------------------
 // CONFIGURATION
@@ -167,7 +181,7 @@ function manualSave() {
 
         <form @submit.prevent="manualSave">
 
-            <!-- <pre>{{ form.errors }}</pre> -->
+            <!-- <pre>{{ form }}</pre> -->
 
             <!-- GENERAL + ATTRIBUTES -->
             <div class="max-w-5xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -260,11 +274,41 @@ function manualSave() {
                         <option v-for="c in conditions" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
 
-                    <select v-model="form.opening_id" class="w-full border p-2">
+                    <select v-model="form.opening_id" class="w-full border p-2 mb-2">
                         <option :value="null">Opening</option>
                         <option v-for="o in openings" :key="o.id" :value="o.id">{{ o.name }}</option>
                     </select>
+
+                    <h2 class="mb-4 font-semibold mt-2 ">Prices</h2>
+
+                    <div class="grid grid-cols-2 gap-4 ">
+    
+                        <label>
+                            Purchase
+                            <input v-model="form.purchase_price" class="border p-2 w-full" />
+                        </label>
+                        <label>
+                            Inital 
+                            <input v-model="form.initial_price" class="border p-2 w-full" />
+                        </label>
+                        <label>
+                            Website 
+                            <input v-model="form.website_price" class="border p-2 w-full" />
+                        </label>
+                        <label>
+                            Sold Price
+                            <input v-model="form.sold_price" class="border p-2 w-full" />
+                        </label>
+
+
+                       
+                        
+
+                    </div>
+
                 </div>
+
+                
             </div>
 
             <!-- CONFIGURATION -->
