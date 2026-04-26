@@ -24,6 +24,7 @@ class AttributesMaterialSeeder extends Seeder
             'Composite',
             'Steel',
             'Upvc',
+            'Wooden',
         ];
 
         foreach ($names as $name) {
