@@ -91,6 +91,11 @@ const money = (val) => {
                 >
                     View this month's logs →
                 </Link>
+
+                <div class="mb-4 pb-4 border-b">
+                    <p class="text-sm text-gray-500">Total Fuel Spend</p>
+                    <p class="text-2xl font-bold">£{{ money(fuel.total) }}</p>
+                </div>
             </div>
         </div>
     </div>

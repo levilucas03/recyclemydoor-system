@@ -23,6 +23,8 @@ class DashboardController extends Controller
         $lastWeekStart = Carbon::now()->subWeek()->startOfWeek();
         $lastWeekEnd = Carbon::now()->subWeek()->endOfWeek();
 
+        $totalFuel = FuelLog::sum('cost');
+
         $thisWeekFuel = FuelLog::whereBetween('date', [$thisWeekStart, now()])
             ->sum('cost');
 
@@ -92,6 +94,7 @@ class DashboardController extends Controller
                 'last_week' => $lastWeekFuel,
                 'this_month' => $thisMonthFuel,
                 'last_month' => $lastMonthFuel,
+                'total' => $totalFuel,
             ]
         ]);
     }
