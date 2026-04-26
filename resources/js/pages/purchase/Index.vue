@@ -24,7 +24,7 @@ defineProps({
             <a :href="route('purchases.create')" class="text-blue-600 hover:underline">Add Purchase</a>
         </template>
 
-        <div class="py-12">
+        <div class="py-6 md:py-12">
             <div class="max-w-7xl sm:px-6 lg:px-8 mx-auto">
                 <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
                     <div class="p-4">

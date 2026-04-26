@@ -57,6 +57,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Listings
                                 </NavLink>
+                                <NavLink
+                                    :href="route('fuel-logs.index')"
+                                    :active="route().current('fuel-logs.index')"
+                                >
+                                    Fuel Logs
+                                </NavLink>
                             </div>
                         </div>
 
@@ -163,6 +169,25 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('products.index')"
+                            :active="route().current('products.*')"
+                        >
+                            Products
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('purchases.index')"
+                            :active="route().current('purchases.*')"
+                        >
+                            Purchases
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            :href="route('fuel-logs.index')"
+                            :active="route().current('fuel-logs.*')"
+                        >
+                            Fuel
                         </ResponsiveNavLink>
                     </div>
 

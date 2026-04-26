@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Purchase;
+use App\Models\Product;
+use App\Models\FuelLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -12,6 +14,31 @@ class DashboardController extends Controller
 {
     public function index()
     {
+
+        // ---------------------
+        // FUEL STATS
+        // ---------------------
+
+        $thisWeekStart = Carbon::now()->startOfWeek();
+        $lastWeekStart = Carbon::now()->subWeek()->startOfWeek();
+        $lastWeekEnd = Carbon::now()->subWeek()->endOfWeek();
+
+        $thisWeekFuel = FuelLog::whereBetween('date', [$thisWeekStart, now()])
+            ->sum('cost');
+
+        $lastWeekFuel = FuelLog::whereBetween('date', [$lastWeekStart, $lastWeekEnd])
+            ->sum('cost');
+
+        $thisMonthStart = Carbon::now()->startOfMonth();
+        $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+
+        $thisMonthFuel = FuelLog::whereBetween('date', [$thisMonthStart, now()])
+            ->sum('cost');
+
+        $lastMonthFuel = FuelLog::whereBetween('date', [$lastMonthStart, $lastMonthEnd])
+            ->sum('cost');
+
         $now = now();
 
         $today = Purchase::whereDate('purchase_date', $now->toDateString())->sum('total_amount');
@@ -59,6 +86,12 @@ class DashboardController extends Controller
                 ])->sum('total_amount'),
                 'percentageChange' => $percentageChange,
                 'avgDaily' => $avgDaily,
+            ],
+            'fuel' => [
+                'this_week' => $thisWeekFuel,
+                'last_week' => $lastWeekFuel,
+                'this_month' => $thisMonthFuel,
+                'last_month' => $lastMonthFuel,
             ]
         ]);
     }

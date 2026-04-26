@@ -26,7 +26,7 @@ class ProductController extends Controller
                 'primaryImage'
             ])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(15);
 
 
         return Inertia::render('product/Index', [

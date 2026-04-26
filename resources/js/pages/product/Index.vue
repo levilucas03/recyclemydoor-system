@@ -18,14 +18,14 @@ defineProps({
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">Products</h2>
-            <a :href="route('products.create')" class="text-blue-600 hover:underline">Add Product</a>
+            <!-- <a :href="route('products.create')" class="text-blue-600 hover:underline">Add Product</a> -->
         </template>
 
         
 
 
 
-        <div class="py-12">
+        <div class="py-6 md:py-12">
             <div class="max-w-7xl sm:px-6 lg:px-8 mx-auto">
                 <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
                     <div class="p-4">

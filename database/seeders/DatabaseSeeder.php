@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
             // BrandSeeder::class,
             // PurchaseDemoSeeder::class,
             CategorySeeder::class,
+            VehicleSeeder::class,
+            FuelLogSeeder::class,
     
         ]);
     }
