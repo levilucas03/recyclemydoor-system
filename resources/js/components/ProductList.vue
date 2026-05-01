@@ -34,7 +34,8 @@
                         <img
                             v-if="product.primary_image"
                             :src="`/storage/${product.primary_image.path}`"
-                            class="w-14 h-14 object-cover rounded"
+                            class="w-14 h-14 object-cover rounded cursor-pointer"
+                            @click.stop="openPreview(`/storage/${product.primary_image.path}`)"
                         />
                         <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
                     </td>
@@ -67,8 +68,10 @@
                         <img
                             v-if="product.primary_image"
                             :src="`/storage/${product.primary_image.path}`"
-                            class="w-full h-full object-cover rounded"
+                            class="w-full h-full object-cover rounded cursor-pointer"
+                            @click.stop.prevent="openPreview(`/storage/${product.primary_image.path}`)"
                         />
+                        
                         <div v-else class="w-full h-full bg-gray-200 rounded"></div>
                     </div>
 
@@ -104,11 +107,27 @@
             />
         </div>
     </div>
+
+    <ImagePreview
+        :src="previewImage"
+        :show="showPreview"
+        @close="showPreview = false"
+    />
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
+
+import ImagePreview from '@/components/ImagePreview.vue'
+
+const previewImage = ref<string | null>(null)
+const showPreview = ref(false)
+
+const openPreview = (src: string) => {
+    previewImage.value = src
+    showPreview.value = true
+}
 
 const props = defineProps({
     products: Object,
