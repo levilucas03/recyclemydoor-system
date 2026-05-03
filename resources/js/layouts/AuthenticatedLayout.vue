@@ -46,11 +46,18 @@ const showingNavigationDropdown = ref(false);
                                     Purchases
                                 </NavLink>
                                 <NavLink
+                                    :href="route('sales.index')"
+                                    :active="route().current('sales.index')"
+                                >
+                                    Sales
+                                </NavLink>
+                                <NavLink
                                     :href="route('products.index')"
                                     :active="route().current('products.index')"
                                 >
                                     Products
                                 </NavLink>
+                                
                                 <NavLink
                                     :href="route('listings.index')"
                                     :active="route().current('listings.index')"
@@ -183,12 +190,21 @@ const showingNavigationDropdown = ref(false);
                             Purchases
                         </ResponsiveNavLink>
 
+                         <ResponsiveNavLink
+                            :href="route('sales.index')"
+                            :active="route().current('sales.*')"
+                        >
+                            Sales
+                        </ResponsiveNavLink>
+
                         <ResponsiveNavLink
                             :href="route('fuel-logs.index')"
                             :active="route().current('fuel-logs.*')"
                         >
                             Fuel
                         </ResponsiveNavLink>
+
+                       
                     </div>
 
                     <!-- Responsive Settings Options -->

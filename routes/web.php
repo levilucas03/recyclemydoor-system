@@ -4,6 +4,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
@@ -49,6 +50,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/contacts/search', [ContactController::class, 'search'])
     ->name('contacts.search');
 
+    Route::get('/products/search', function (Illuminate\Http\Request $request) {
+        return \App\Models\Product::query()
+            ->with('prices', 'primaryImage')
+            ->where('title', 'like', "%{$request->q}%")
+            ->orWhere('sku', 'like', "%{$request->q}%")
+            ->limit(10)
+            ->get()
+            ->map(function ($product) {
+
+                // dd($product->primaryImage->path);
+                return [
+                    'id' => $product->id,
+                    'title' => $product->title,
+                    'image' => '/storage/' . $product->primaryImage->path ?? '',
+                    'size' => "{$product->width} x {$product->height}",
+                    'price' => $product->prices->firstWhere('type', 'website')->price ?? 0
+                ];
+            });
+    })->name('products.search');
+
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -58,6 +79,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
 
     Route::resource('purchases', PurchaseController::class);
+    
        Route::post('/purchases/bulk-delete', [PurchaseController::class, 'bulkDelete'])->name('purchases.bulk-delete');
 
 
@@ -71,6 +93,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::resource('sales', SaleController::class);
+    Route::post('/sales/bulk-delete', [SaleController::class, 'bulkDelete']);
 });
 
 require __DIR__.'/auth.php';
