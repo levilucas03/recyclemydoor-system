@@ -47,10 +47,13 @@ class PurchaseController extends Controller
         $materials = Attribute::whereHas('group', fn($q) => $q->where('slug', 'material'))->get();
         $colours = Attribute::whereHas('group', fn($q) => $q->where('slug', 'colour'))->get();
 
+        // dd(PurchaseStatus::options());
+
         return Inertia::render('purchase/Create', [
             'categories' => $categories,
             'materials' => $materials,
             'colours' => $colours,
+            'statusOptions' => PurchaseStatus::options(),
         ]);
     }
 
@@ -70,6 +73,10 @@ class PurchaseController extends Controller
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
 
             'purchase_date' => 'required|date',
+            'status' => 'required|string',
+            'notes' => 'nullable',
+            'collection_notes' => 'nullable',
+            'driver_notes' => 'nullable',
             'address_1' => 'nullable|string|max:255',
             'address_2' => 'nullable|string|max:255',
             'town_city' => 'nullable|string|max:255',
@@ -113,13 +120,16 @@ class PurchaseController extends Controller
         $purchase = Purchase::create([
             'contact_id' => $contact->id,
             'user_id' => auth()->id(),
-            'status' => 'draft',
+            'status' => $data['status'],
             'purchase_date' => $data['purchase_date'],
             'total_amount' => collect($data['products'])->sum('price'),
             'collection_address_1' => $data['address_1'] ?? null,
             'collection_address_2' => $data['address_2'] ?? null,
             'collection_town_city' => $data['town_city'] ?? null,
             'collection_postcode' => $data['postcode'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'driver_notes' => $data['driver_notes'] ?? null,
+            'collection_notes' => $data['collection_notes'] ?? null,
         ]);
 
         // Create products
@@ -188,6 +198,7 @@ class PurchaseController extends Controller
             'categories' => $categories,
             'materials' => $materials,
             'colours' => $colours,
+            'statusOptions' => PurchaseStatus::options(),
         ]);
     }
 
@@ -196,6 +207,8 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, Purchase $purchase)
     {
+
+    
         $data = $request->validate([
             'contact_id' => 'nullable|exists:contacts,id',
 
@@ -206,6 +219,7 @@ class PurchaseController extends Controller
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
 
             'purchase_date' => 'required|date',
+            'status' => 'string',
 
             'address_1' => 'nullable|string',
             'address_2' => 'nullable|string',
@@ -224,7 +238,12 @@ class PurchaseController extends Controller
 
             'products.*.material_id' => 'nullable|exists:attributes,id',
             'products.*.colour_id' => 'nullable|exists:attributes,id',
+
+            'notes' => 'nullable',
+            'collection_notes' => 'nullable',
+            'driver_notes' => 'nullable',
         ]);
+
 
         $contactData = $data['contact'] ?? [];
 
@@ -244,12 +263,16 @@ class PurchaseController extends Controller
         $purchase->update([
             'contact_id' => $contact->id,
             'purchase_date' => $data['purchase_date'],
+            'status' => $data['status'],
             'collection_address_1' => $data['address_1'] ?? null,
             'collection_address_2' => $data['address_2'] ?? null,
             'collection_town_city' => $data['town_city'] ?? null,
             'collection_postcode' => $data['postcode'] ?? null,
             'collection_country' => $data['country'] ?? null,
             'total_amount' => collect($data['products'])->sum('price'),
+            'notes' => $data['notes'] ?? null,
+            'driver_notes' => $data['driver_notes'] ?? null,
+            'collection_notes' => $data['collection_notes'] ?? null,
         ]);
 
         // ------------------------

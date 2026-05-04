@@ -27,6 +27,7 @@
                     <th class="p-2 text-left">Date</th>
                     <th class="p-2 text-left">Name</th>
                     <th class="p-2 text-left">No. Products</th>
+                    <th class="p-2 text-left">Status</th>
                     <th class="p-2 text-left">Price</th>
                     <th class="p-2 text-left"></th>
                     <th class="p-2 text-left"></th>
@@ -53,6 +54,10 @@
 
                         <td class="p-2">
                             {{ purchase.products_count }}
+                        </td>
+
+                        <td class="p-2">
+                            {{ purchase.status_label }}
                         </td>
 
                         <td class="p-2">

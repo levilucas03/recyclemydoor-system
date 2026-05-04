@@ -23,7 +23,7 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
             $table->text('driver_notes')->nullable();
-            $table->text('collection_plan_notes')->nullable();
+            $table->text('collection_notes')->nullable();
             $table->text('ideal_collection_date')->nullable();
 
             $table->decimal('total_amount', 10, 2)->default(0);

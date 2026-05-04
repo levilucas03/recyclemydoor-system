@@ -16,7 +16,7 @@ class Purchase extends Model
         'includes_vat',
         'notes',
         'driver_notes',
-        'collection_plan_notes',
+        'collection_notes',
         'ideal_collection_date',
         'total_amount',
         'deposit_paid',
@@ -47,5 +47,12 @@ class Purchase extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    protected $appends = ['status_label'];
+
+    public function getStatusLabelAttribute(): ?string
+    {
+        return $this->status?->label();
     }
 }

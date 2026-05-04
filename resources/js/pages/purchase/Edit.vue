@@ -13,6 +13,7 @@ const props = defineProps({
     categories: Array,
     materials: Array,
     colours: Array,
+    statusOptions: Array,
 })
 
 // --------------------
@@ -48,6 +49,10 @@ const form = useForm({
     contact_id: props.purchase?.contact?.id || null,
 
     purchase_date: props.purchase?.purchase_date || '',
+    status: props.purchase?.status || '',
+    notes: props.purchase?.notes || '',
+    collection_notes: props.purchase?.collection_notes || '',
+    driver_notes: props.purchase?.driver_notes || '',
 
     address_1: props.purchase?.collection_address_1 || '',
     address_2: props.purchase?.collection_address_2 || '',
@@ -202,6 +207,12 @@ function submit() {
             <h3 class="text-lg font-semibold mb-4">Purchase Details</h3>
 
             <input type="date" v-model="form.purchase_date" class="border p-2 rounded w-full" />
+
+             <select v-model="form.status" class="border rounded p-2 w-full">
+                <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                </option>
+            </select>
         </div>
 
         <!-- CONTACT -->
@@ -282,6 +293,42 @@ function submit() {
                     </button>
                 </div>
             </div>
+        </div>
+
+         <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-lg font-semibold mb-4">Notes</h3>
+
+            <label class="block text-sm mb-1">General Notes</label>
+            <textarea
+                v-model="form.notes"
+                class="border p-2 rounded w-full"
+                :class="{ 'border-red-500': form.errors.notes }">
+            </textarea>
+            <div v-if="form.errors.notes" class="text-red-500 text-sm">
+                {{ form.errors.notes }}
+            </div>
+
+            <label class="block text-sm mb-1">Collection Notes</label>
+            <textarea
+                v-model="form.collection_notes"
+                class="border p-2 rounded w-full"
+                :class="{ 'border-red-500': form.errors.collection_notes }">
+            </textarea>
+            <div v-if="form.errors.collection_notes" class="text-red-500 text-sm">
+                {{ form.errors.collection_notes }}
+            </div>
+
+            <label class="block text-sm mb-1">Driver Notes</label>
+            <textarea
+                v-model="form.driver_notes"
+                class="border p-2 rounded w-full"
+                :class="{ 'border-red-500': form.errors.driver_notes }">
+            </textarea>
+            <div v-if="form.errors.driver_notes" class="text-red-500 text-sm">
+                {{ form.errors.driver_notes }}
+            </div>
+
+           
         </div>
 
         <!-- TOTAL -->
