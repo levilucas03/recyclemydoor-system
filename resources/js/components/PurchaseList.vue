@@ -57,7 +57,16 @@
                         </td>
 
                         <td class="p-2">
-                            {{ purchase.status_label }}
+                            <span
+                                class="px-2 py-1 text-xs rounded"
+                                :class="{
+                                    'bg-gray-200': !purchase.status,
+                                    'bg-gray-200': purchase.status == 'draft',
+                                    'bg-yellow-200': purchase.status == 'awaiting_collection',
+                                    'bg-green-200': purchase.status == 'complete'
+                                }">
+                                    {{ purchase.status_label }}
+                            </span>
                         </td>
 
                         <td class="p-2">
@@ -70,17 +79,24 @@
                             </Link>
                         </td>
                         <td class="p-2">
+
                             <button
                                 v-if="!purchase.xero_id"
                                 @click="sendToXero(purchase.id)"
-                                class="bg-indigo-600 text-white px-2 py-1 rounded text-xs"
+                                class="text-white px-2 py-1 rounded text-xs"
                             >
-                                Send
+
+                                <img
+                                    src="/images/xero.svg"
+                                    class="w-5 h-5"
+                                    :class="'grayscale'"
+                                />
                             </button>
 
-                            <span v-else class="text-green-600 text-xs">
-                                Sent
-                            </span>
+                            <img v-else src="/images/xero.svg"
+                                class="w-5 h-5"
+                                :class="'opacity-100'"
+                            />
                         </td>
 
                     </tr>

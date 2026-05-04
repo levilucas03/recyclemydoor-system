@@ -8,6 +8,10 @@ import ProductSearchModal from '@/Components/ProductSearchModal.vue'
 
 const showProductModal = ref(false)
 
+const props = defineProps({
+    statusOptions: Array,
+})
+
 // --------------------
 // FORM
 // --------------------
@@ -20,13 +24,13 @@ const form = useForm({
         type: 'general_public',
     },
     contact_id: null,
-
+    status: 'draft',
     address_1: '',
     address_2: '',
     town_city: '',
     postcode: '',
 
-    invoice_date: '',
+    invoice_date:  new Date().toISOString().split('T')[0],
     notes: '',
     items: []
 })
@@ -136,7 +140,7 @@ const total = computed(() => {
 // SUBMIT
 // --------------------
 function submit() {
-     if (form.contact_id) {
+    if (form.contact_id) {
         form.contact = {} as any // remove new contact data
     }
 
@@ -158,6 +162,20 @@ function submit() {
 <div class="max-w-6xl mx-auto py-8 space-y-6">
 
     <pre>{{ form.errors }}</pre>
+
+        <!-- DATE -->
+    <div class="bg-white p-6 rounded shadow">
+        <label class="block text-sm mb-1">Sale Date</label>
+        <input v-model="form.invoice_date" type="date" class="rounded mb-2 border p-2" />
+
+        <label class="block text-sm mb-1">Status</label>
+        <select v-model="form.status" class="border rounded p-2 w-full">
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+            </option>
+        </select>
+    </div>
+
 
     <!-- CONTACT -->
     <div class="bg-white p-6 rounded shadow">
@@ -207,10 +225,7 @@ function submit() {
         </div>
     </div>
 
-    <!-- DATE -->
-    <div class="bg-white p-6 rounded shadow">
-        <input v-model="form.invoice_date" type="date" class="border p-2" />
-    </div>
+
 
     <!-- ITEMS -->
     <div class="bg-white p-6 rounded shadow">

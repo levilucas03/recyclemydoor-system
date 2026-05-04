@@ -8,6 +8,7 @@ use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Enums\SaleStatus;
 
 class SaleController extends Controller
 {
@@ -24,7 +25,11 @@ class SaleController extends Controller
 
     public function create()
     {
-        return Inertia::render('Sales/Create');
+
+        return Inertia::render('Sales/Create', [
+            'statusOptions' => SaleStatus::options(),
+        ]);
+
     }
 
     public function store(Request $request)
@@ -37,6 +42,8 @@ class SaleController extends Controller
             'contact.email' => 'nullable|email',
             'contact.mobile' => 'nullable|string',
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
+
+            'status' => 'string',
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
@@ -69,7 +76,7 @@ class SaleController extends Controller
             $sale = Sale::create([
                 'contact_id' => $request['contact_id'],
                 'user_id' => auth()->id(),
-                'status' => 'draft',
+                'status' => $request->status,
                 'invoice_date' => $request->invoice_date,
                 'notes' => $request->notes,
                 'source' => $request->source,
@@ -134,7 +141,8 @@ class SaleController extends Controller
         ]);
 
         return Inertia::render('Sales/Edit', [
-            'sale' => $sale
+            'sale' => $sale,
+            'statusOptions' => SaleStatus::options(),
         ]);
     }
 
@@ -149,6 +157,8 @@ class SaleController extends Controller
             'contact.email' => 'nullable|email',
             'contact.mobile' => 'nullable|string',
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
+
+            'status' => 'string',
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
@@ -189,6 +199,8 @@ class SaleController extends Controller
 
                 'invoice_date' => $request->invoice_date,
                 'notes' => $request->notes,
+
+                'status' => $request->status,
 
                 'deliver_address_1' => $request->address_1,
                 'deliver_address_2' => $request->address_2,

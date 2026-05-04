@@ -6,7 +6,8 @@ import ProductSearchModal from '@/Components/ProductSearchModal.vue'
 import axios from 'axios'
 
 const props = defineProps({
-    sale: Object
+    sale: Object,
+    statusOptions: Array,
 })
 
 // --------------------
@@ -29,6 +30,9 @@ const form = useForm({
 
     invoice_date: props.sale.invoice_date,
     notes: props.sale.notes,
+
+    status: props.sale?.status || '',
+    
 
     items: props.sale.items.map(item => ({
         id: item.id,
@@ -167,6 +171,19 @@ function submit() {
 
 <div class="max-w-6xl mx-auto py-8 space-y-6">
 
+    <!-- DATE -->
+    <div class="bg-white p-6 rounded shadow">
+        <input v-model="form.invoice_date" type="date" class="border p-2" />
+
+        <select v-model="form.status" class="border rounded p-2 w-full">
+                <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                </option>
+            </select>
+    </div>
+
+    
+
     <!-- CONTACT -->
     <div class="bg-white p-6 rounded shadow">
         <input v-model="search" placeholder="Search contact..." class="border p-2 w-full" />
@@ -196,11 +213,7 @@ function submit() {
         <input v-model="form.postcode" placeholder="Postcode" class="border p-2" />
     </div>
 
-    <!-- DATE -->
-    <div class="bg-white p-6 rounded shadow">
-        <input v-model="form.invoice_date" type="date" class="border p-2" />
-    </div>
-
+    
     <!-- ITEMS -->
     <div class="bg-white p-6 rounded shadow">
 

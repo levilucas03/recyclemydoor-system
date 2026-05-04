@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue'
 import { router, Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import { useDateFormatter } from '@/composables/useDateFormatter'
+
+const { formatPretty } = useDateFormatter()
 
 const props = defineProps({
     sales: Object
@@ -66,8 +69,8 @@ function goToSale(sale) {
                                             <input type="checkbox" v-model="selectAll" @change="toggleAll" />
                                         </th>
                                         <th class="p-2 text-left">Ref</th>
-                                        <th class="p-2 text-left">Customer</th>
                                         <th class="p-2 text-left">Date</th>
+                                        <th class="p-2 text-left">Customer</th>
                                         <th class="p-2 text-left">Status</th>
                                         <th class="p-2 text-right">Total</th>
                                         <th class="p-2 text-center">Paid</th>
@@ -89,10 +92,16 @@ function goToSale(sale) {
                                                 v-model="selected"
                                             />
                                         </td>
+                                        
 
                                         <!-- Ref -->
                                         <td class="p-2 font-medium">
                                             #{{ sale.id }}
+                                        </td>
+
+                                         <!-- Date -->
+                                        <td class="p-2">
+                                            {{ sale.invoice_date ? formatPretty(sale.invoice_date) : '-' }}
                                         </td>
 
                                         <!-- Customer -->
@@ -100,22 +109,19 @@ function goToSale(sale) {
                                             {{ sale.contact?.name || 'No customer' }}
                                         </td>
 
-                                        <!-- Date -->
-                                        <td class="p-2">
-                                            {{ sale.invoice_date || '-' }}
-                                        </td>
+                                       
 
                                         <!-- Status -->
                                         <td class="p-2">
                                             <span
                                                 class="px-2 py-1 text-xs rounded"
                                                 :class="{
-                                                    'bg-gray-200': !sale.status_id,
-                                                    'bg-yellow-200': sale.status_id == 1,
-                                                    'bg-green-200': sale.status_id == 2
+                                                    'bg-gray-200': sale.status,
+                                                    'bg-orange-200': sale.status_id == 'awaiting_delivery',
+                                                    'bg-green-200': sale.status_id == 'complete'
                                                 }"
                                             >
-                                                {{ sale.status_id == 2 ? 'Paid' : 'Pending' }}
+                                                {{ sale.status_label }}
                                             </span>
                                         </td>
 

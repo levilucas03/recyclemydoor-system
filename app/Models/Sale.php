@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\SaleStatus;
 
 class Sale extends Model
 {
+
+    protected $casts = [
+        'status' => SaleStatus::class,
+    ];
 
     protected $fillable = [
         'wc_id',
@@ -13,7 +18,7 @@ class Sale extends Model
 
         'contact_id',
         'user_id',
-        'status_id',
+        'status',
 
         'xero_id',
 
@@ -52,5 +57,12 @@ class Sale extends Model
     public function contact()
     {
         return $this->belongsTo(Contact::class);
+    }
+
+     protected $appends = ['status_label'];
+
+    public function getStatusLabelAttribute(): ?string
+    {
+        return $this->status?->label();
     }
 }
