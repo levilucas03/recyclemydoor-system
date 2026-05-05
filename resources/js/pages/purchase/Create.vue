@@ -13,6 +13,7 @@ const props = defineProps({
     materials: Array,
     colours: Array,
     statusOptions: Array,
+    sources : Array
 })
 
 // --------------------
@@ -37,6 +38,7 @@ const form = useForm({
     notes: '',
     driver_notes: '',
     collection_notes: '',
+    source_id: null,
 })
 
 // --------------------
@@ -183,6 +185,18 @@ function deleteProduct(index: number) {
             <select v-model="form.status" class="border rounded p-2 w-full">
                 <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
+                </option>
+            </select>
+
+            <select v-model="form.source_id" class="border rounded p-2 w-full">
+                <option :value="null">Select source</option>
+
+                <option
+                    v-for="source in sources"
+                    :key="source.id"
+                    :value="source.id"
+                >
+                    {{ source.name }}
                 </option>
             </select>
         </div>

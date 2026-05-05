@@ -7,6 +7,7 @@ use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Attribute;
+use App\Models\Source;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,7 +24,10 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        $purchases = Purchase::with('contact')
+        $purchases = Purchase::with([
+                'contact',
+                'source'
+            ])
             ->withCount('products')
             ->orderBy('purchase_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -54,6 +58,7 @@ class PurchaseController extends Controller
             'materials' => $materials,
             'colours' => $colours,
             'statusOptions' => PurchaseStatus::options(),
+            'sources' => Source::select('id', 'name')->get(),
         ]);
     }
 
@@ -81,6 +86,7 @@ class PurchaseController extends Controller
             'address_2' => 'nullable|string|max:255',
             'town_city' => 'nullable|string|max:255',
             'postcode' => 'nullable|string|max:20',
+            'source_id' => 'required',
 
             'products' => 'required|array|min:0',
             'products.*.title' => 'required|string',
@@ -130,6 +136,7 @@ class PurchaseController extends Controller
             'notes' => $data['notes'] ?? null,
             'driver_notes' => $data['driver_notes'] ?? null,
             'collection_notes' => $data['collection_notes'] ?? null,
+            'source_id' => $request->source_id,
         ]);
 
         // Create products
@@ -187,6 +194,7 @@ class PurchaseController extends Controller
             'products.categories',
             'products.attributes.group',
             'products.prices',
+            'source',
         ]);
 
         $categories = Category::whereNull('parent_id')->with('children')->get();
@@ -199,6 +207,7 @@ class PurchaseController extends Controller
             'materials' => $materials,
             'colours' => $colours,
             'statusOptions' => PurchaseStatus::options(),
+            'sources' => Source::select('id', 'name')->get(),
         ]);
     }
 
@@ -242,6 +251,7 @@ class PurchaseController extends Controller
             'notes' => 'nullable',
             'collection_notes' => 'nullable',
             'driver_notes' => 'nullable',
+            'source_id' => 'required'
         ]);
 
 
@@ -273,6 +283,7 @@ class PurchaseController extends Controller
             'notes' => $data['notes'] ?? null,
             'driver_notes' => $data['driver_notes'] ?? null,
             'collection_notes' => $data['collection_notes'] ?? null,
+            'source_id' => $data['source_id'] ?? null,
         ]);
 
         // ------------------------

@@ -28,6 +28,7 @@
                     <th class="p-2 text-left">Name</th>
                     <th class="p-2 text-left">No. Products</th>
                     <th class="p-2 text-left">Status</th>
+                    <th class="p-2 text-left">Source</th>
                     <th class="p-2 text-left">Price</th>
                     <th class="p-2 text-left"></th>
                     <th class="p-2 text-left"></th>
@@ -60,13 +61,16 @@
                             <span
                                 class="px-2 py-1 text-xs rounded"
                                 :class="{
-                                    'bg-gray-200': !purchase.status,
                                     'bg-gray-200': purchase.status == 'draft',
                                     'bg-yellow-200': purchase.status == 'awaiting_collection',
                                     'bg-green-200': purchase.status == 'complete'
                                 }">
                                     {{ purchase.status_label }}
                             </span>
+                        </td>
+
+                        <td class="p-2">
+                            {{ purchase.source?.name ?? '—' }}
                         </td>
 
                         <td class="p-2">

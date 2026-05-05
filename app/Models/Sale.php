@@ -24,7 +24,7 @@ class Sale extends Model
 
         'notes',
         'planning_notes',
-        'source',
+        'source_id',
 
         'predict_date',
         'invoice_date',
@@ -64,5 +64,10 @@ class Sale extends Model
     public function getStatusLabelAttribute(): ?string
     {
         return $this->status?->label();
+    }
+
+    public function source()
+    {
+        return $this->belongsTo(Source::class);
     }
 }

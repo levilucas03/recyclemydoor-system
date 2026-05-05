@@ -55,4 +55,9 @@ class Purchase extends Model
     {
         return $this->status?->label();
     }
+
+    public function source()
+    {
+        return $this->belongsTo(Source::class);
+    }
 }

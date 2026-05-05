@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Contact;
+use App\Models\Source;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -28,6 +29,7 @@ class SaleController extends Controller
 
         return Inertia::render('Sales/Create', [
             'statusOptions' => SaleStatus::options(),
+            'sources' => Source::select('id', 'name')->get(),
         ]);
 
     }
@@ -137,11 +139,13 @@ class SaleController extends Controller
     {
         $sale->load([
             'contact',
-            'items'
+            'items',
+            'source'
         ]);
 
         return Inertia::render('Sales/Edit', [
             'sale' => $sale,
+            'sources' => Source::select('id', 'name')->get(),
             'statusOptions' => SaleStatus::options(),
         ]);
     }

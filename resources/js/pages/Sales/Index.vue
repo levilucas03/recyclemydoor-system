@@ -116,9 +116,9 @@ function goToSale(sale) {
                                             <span
                                                 class="px-2 py-1 text-xs rounded"
                                                 :class="{
-                                                    'bg-gray-200': sale.status,
-                                                    'bg-orange-200': sale.status_id == 'awaiting_delivery',
-                                                    'bg-green-200': sale.status_id == 'complete'
+                                                    'bg-gray-200': sale.status == 'draft',
+                                                    'bg-orange-200': sale.status == 'awaiting_delivery',
+                                                    'bg-green-200': sale.status == 'complete'
                                                 }"
                                             >
                                                 {{ sale.status_label }}
