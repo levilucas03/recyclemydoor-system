@@ -8,6 +8,7 @@ import axios from 'axios'
 const props = defineProps({
     sale: Object,
     statusOptions: Array,
+    sources : Array,
 })
 
 // --------------------
@@ -21,20 +22,21 @@ const form = useForm({
         mobile: '',
         type: 'general_public',
     },
-    contact_id: props.sale.contact_id,
+    contact_id: props.sale?.contact_id,
 
-    address_1: props.sale.deliver_address_1 || '',
-    address_2: props.sale.deliver_address_2 || '',
-    town_city: props.sale.deliver_town_city || '',
-    postcode: props.sale.deliver_postcode || '',
+    address_1: props.sale?.deliver_address_1 || '',
+    address_2: props.sale?.deliver_address_2 || '',
+    town_city: props.sale?.deliver_town_city || '',
+    postcode: props.sale?.deliver_postcode || '',
+    source_id: props.sale?.source_id ?? null,
 
-    invoice_date: props.sale.invoice_date,
-    notes: props.sale.notes,
+    invoice_date: props.sale?.invoice_date,
+    notes: props.sale?.notes,
 
     status: props.sale?.status || '',
     
 
-    items: props.sale.items.map(item => ({
+    items: props.sale?.items.map(item => ({
         id: item.id,
         type: item.type,
         product_id: item.product_id,
@@ -176,13 +178,24 @@ function submit() {
         <input v-model="form.invoice_date" type="date" class="border p-2" />
 
         <select v-model="form.status" class="border rounded p-2 w-full">
-                <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                </option>
-            </select>
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+            </option>
+        </select>
+        <select v-model="form.source_id" class="border rounded p-2 w-full">
+            <option :value="null">Select source</option>
+
+            <option
+                v-for="source in sources"
+                :key="source.id"
+                :value="source.id"
+            >
+                {{ source.name }}
+            </option>
+        </select>
     </div>
 
-    
+
 
     <!-- CONTACT -->
     <div class="bg-white p-6 rounded shadow">

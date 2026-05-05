@@ -15,7 +15,10 @@ class SaleController extends Controller
 {
     public function index()
     {
-        $sales = Sale::with('contact')
+        $sales = Sale::with([
+                'contact', 
+                'source'
+            ])
             ->latest()
             ->paginate(20);
 
@@ -46,6 +49,7 @@ class SaleController extends Controller
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
 
             'status' => 'string',
+            'source_id' => 'required',
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
@@ -88,6 +92,7 @@ class SaleController extends Controller
                 'deliver_address_2' => $request['address_2'] ?? null,
                 'deliver_town_city' => $request['town_city'] ?? null,
                 'deliver_postcode' => $request['postcode'] ?? null,
+                'source_id' => $request->source_id,
             ]);
 
             $total = 0;
@@ -147,6 +152,7 @@ class SaleController extends Controller
             'sale' => $sale,
             'sources' => Source::select('id', 'name')->get(),
             'statusOptions' => SaleStatus::options(),
+            'sources' => Source::select('id', 'name')->get(),
         ]);
     }
 
@@ -163,6 +169,7 @@ class SaleController extends Controller
             'contact.type' => 'required_without:contact_id|in:general_public,supplier,company',
 
             'status' => 'string',
+            'source_id' => 'required',
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
@@ -205,6 +212,7 @@ class SaleController extends Controller
                 'notes' => $request->notes,
 
                 'status' => $request->status,
+                'source_id' => $request->source_id,
 
                 'deliver_address_1' => $request->address_1,
                 'deliver_address_2' => $request->address_2,

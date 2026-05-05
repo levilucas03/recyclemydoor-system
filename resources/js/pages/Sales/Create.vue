@@ -10,6 +10,7 @@ const showProductModal = ref(false)
 
 const props = defineProps({
     statusOptions: Array,
+    sources : Array
 })
 
 // --------------------
@@ -29,6 +30,7 @@ const form = useForm({
     address_2: '',
     town_city: '',
     postcode: '',
+    source_id: null,
 
     invoice_date:  new Date().toISOString().split('T')[0],
     notes: '',
@@ -172,6 +174,18 @@ function submit() {
         <select v-model="form.status" class="border rounded p-2 w-full">
             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
+            </option>
+        </select>
+
+        <select v-model="form.source_id" class="border rounded p-2 w-full">
+            <option :value="null">Select source</option>
+
+            <option
+                    v-for="source in sources"
+                    :key="source.id"
+                    :value="source.id"
+                >
+                {{ source.name }}
             </option>
         </select>
     </div>

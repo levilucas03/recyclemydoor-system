@@ -72,6 +72,7 @@ function goToSale(sale) {
                                         <th class="p-2 text-left">Date</th>
                                         <th class="p-2 text-left">Customer</th>
                                         <th class="p-2 text-left">Status</th>
+                                        <th class="p-2 text-left">Source</th>
                                         <th class="p-2 text-right">Total</th>
                                         <th class="p-2 text-center">Paid</th>
                                     </tr>
@@ -123,6 +124,10 @@ function goToSale(sale) {
                                             >
                                                 {{ sale.status_label }}
                                             </span>
+                                        </td>
+
+                                        <td class="p-2">
+                                            {{ sale.source?.name ?? '—' }}
                                         </td>
 
                                         <!-- Total -->
