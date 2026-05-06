@@ -52,11 +52,28 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/products/search', function (Illuminate\Http\Request $request) {
         return \App\Models\Product::query()
+            // ->with('prices', 'primaryImage')
+            // ->where('title', 'like', "%{$request->q}%")
+            // ->orWhere('sku', 'like', "%{$request->q}%")
+            // ->limit(10)
+            // ->get()
+
             ->with('prices', 'primaryImage')
-            ->where('title', 'like', "%{$request->q}%")
-            ->orWhere('sku', 'like', "%{$request->q}%")
-            ->limit(10)
-            ->get()
+
+        // 🔥 ONLY AVAILABLE STOCK
+        ->where('qty', '>', 0)
+        ->Where('status', '!=', 'sold')
+
+        // 🔍 SEARCH
+        ->where(function ($q) use ($request) {
+            $q->where('title', 'like', "%{$request->q}%")
+              ->orWhere('sku', 'like', "%{$request->q}%");
+        })
+
+        ->limit(10)
+        ->get()
+            
+            
             ->map(function ($product) {
 
                 // dd($product->primaryImage->path);

@@ -18,7 +18,7 @@ class ProductFactory extends Factory
             'sku' => strtoupper($this->faker->bothify('SKU###')),
             'notes' => $this->faker->paragraph,
             'description' => $this->faker->sentence,
-            'quantity' => rand(1, 10),
+            'qty' => rand(1, 3),
             'width' => $this->faker->randomFloat(2, 10, 100),
             'height' => $this->faker->randomFloat(2, 10, 100),
             'depth' => $this->faker->randomFloat(2, 10, 100),

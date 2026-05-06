@@ -21,7 +21,8 @@ class Product extends Model
         'description',
         'quantity',
         'brand_id',
-        'user_id'
+        'user_id',
+        'qty',
     ];
 
     protected $casts = [

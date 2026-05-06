@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->longText('notes')->nullable();
             $table->longText('description')->nullable();
-            $table->integer('quantity')->default('1');
+            $table->integer('qty')->default('1');
             $table->float('width', 20, 2)->default(0);
             $table->float('height', 20, 2)->default(0);
             $table->float('depth', 20, 2)->default(0);

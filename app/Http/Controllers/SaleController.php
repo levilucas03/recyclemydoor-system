@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Enums\SaleStatus;
+use App\Models\Product;
+use App\Models\ProductPrice;
 
 class SaleController extends Controller
 {
@@ -117,6 +119,39 @@ class SaleController extends Controller
                     'note' => $item['note'] ?? null,
                 ]);
 
+                if (!empty($item['product_id'])) {
+
+                    $product = Product::find($item['product_id']);
+
+                    if ($product) {
+
+                        // --------------------
+                        // SAVE SOLD PRICE
+                        // --------------------
+                        ProductPrice::create([
+                            'product_id' => $product->id,
+                            'type' => 'sold',
+                            'price' => $item['price'],
+                        ]);
+
+                        // --------------------
+                        // UPDATE STOCK
+                        // --------------------
+                        $product->qty = max(0, $product->qty - $item['qty']);
+
+                        // --------------------
+                        // MARK SOLD
+                        // --------------------
+                        if ($product->qty <= 0) {
+
+                            $product->qty = 0;
+                            $product->status = 'sold';
+                        }
+
+                        $product->save();
+                    }
+                }
+
                 $total += $lineTotal;
                 $vatTotal += $vat;
             }
@@ -220,6 +255,36 @@ class SaleController extends Controller
                 'deliver_postcode' => $request->postcode,
             ]);
 
+            // dd($sale->items);
+
+            foreach ($sale->items as $oldItem) {
+
+                if ($oldItem->product_id) {
+
+                    $product = Product::find($oldItem->product_id);
+
+                    if ($product) {
+
+                        // restore stock
+                        $product->qty += $oldItem->qty;
+
+                        // restore status
+                        if ($product->qty > 0) {
+                            $product->status = 'stored';
+                        }
+
+                        $product->save();
+
+                        // remove old sold prices
+                        ProductPrice::query()
+                            ->where('product_id', $product->id)
+                            ->where('type', 'sold')
+                            ->where('price', $oldItem->price)
+                            ->delete();
+                    }
+                }
+            }
+
             // --------------------
             // RESET ITEMS
             // --------------------
@@ -255,6 +320,39 @@ class SaleController extends Controller
                     'account_code' => $item['account_code'] ?? null,
                     'note' => $item['note'] ?? null,
                 ]);
+
+                if (!empty($item['product_id'])) {
+
+                    $product = Product::find($item['product_id']);
+
+                    if ($product) {
+
+                        // --------------------
+                        // SAVE SOLD PRICE
+                        // --------------------
+                        ProductPrice::create([
+                            'product_id' => $product->id,
+                            'type' => 'sold',
+                            'price' => $item['price'],
+                        ]);
+
+                        // --------------------
+                        // UPDATE STOCK
+                        // --------------------
+                        $product->qty = max(0, $product->qty - $item['qty']);
+
+                        // --------------------
+                        // MARK SOLD
+                        // --------------------
+                        if ($product->qty <= 0) {
+
+                            $product->qty = 0;
+                            $product->status = 'sold';
+                        }
+
+                        $product->save();
+                    }
+                }
 
                 $total += $lineTotal;
                 $vatTotal += $vat;
