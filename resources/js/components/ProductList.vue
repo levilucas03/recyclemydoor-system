@@ -20,6 +20,7 @@
                     <th class="p-2 text-left">Title</th>
                     <th class="p-2 text-left">Size</th>
                     <th class="p-2 text-left">Category</th>
+                    <th class="p-2 text-left">Status</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -43,6 +44,7 @@
                     <td class="p-2">{{ product.title }}</td>
                     <td class="p-2">{{ product.width }} x {{ product.height }}</td>
                     <td class="p-2">{{ product.categories?.[0]?.name }}</td>
+                    <td class="p-2">{{ product.status }}</td>
 
                     <td class="p-2">
                         <Link :href="route('products.edit', product.id)" class="text-blue-600">
