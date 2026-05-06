@@ -12,9 +12,33 @@
     <div>
         <div class="flex justify-between items-center mb-4">
             <!-- Bulk Action Button -->
-            <div v-if="selected.length > 0" class="relative">
-                <button @click="bulkDelete" class="bg-red-600 text-white px-3 py-1 rounded">
-                    Delete Selected ({{ selected.length }})
+            <div v-if="selected.length > 0" class="flex gap-2 items-center">
+                <!-- Status dropdown -->
+                <select v-model="bulkStatus" class="border rounded px-2 py-1">
+                    <option value="">Change status</option>
+                    <option
+                        v-for="option in statusOptions"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </option>
+                </select>
+
+                <!-- Apply button -->
+                <button
+                    @click="applyBulkStatus"
+                    class="bg-blue-600 text-white px-3 py-1 rounded"
+                >
+                    Update ({{ selected.length }})
+                </button>
+
+                <!-- Existing delete -->
+                <button
+                    @click="bulkDelete"
+                    class="bg-red-600 text-white px-3 py-1 rounded"
+                >
+                    Delete
                 </button>
             </div>
         </div>
@@ -159,6 +183,10 @@
 import { ref, watch } from 'vue'
 import { useDateFormatter } from '@/composables/useDateFormatter'
 import { router, Link } from '@inertiajs/vue3'
+import axios from 'axios'
+
+
+const bulkStatus = ref('')
 
 
 function sendToXero(id) {
@@ -173,10 +201,25 @@ const { formatPretty } = useDateFormatter()
 
 const props = defineProps({
     purchases: Object,
+    statusOptions: Array
 })
 
 const selected = ref([])
 const selectAll = ref(false)
+
+const applyBulkStatus = () => {
+    if (!bulkStatus.value) {
+        alert('Select a status first')
+        return
+    }
+
+    axios.post(route('purchases.bulkStatus'), {
+        ids: selected.value,
+        status: bulkStatus.value
+    }).then(() => {
+        window.location.reload()
+    })
+}
 
 function toggleAll() {
     if (!props.purchases?.data) return

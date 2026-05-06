@@ -10,13 +10,15 @@ const { formatPretty } = useDateFormatter()
 
 defineProps({
     purchases: Array,
-    test: String
+    test: String,
+    statusOptions: Array,
 })
 
 </script>
 
 <template>
     <Head title="Dashboard" />
+    
 
     <AuthenticatedLayout>
         <template #header>
@@ -28,7 +30,7 @@ defineProps({
             <div class="max-w-7xl sm:px-6 lg:px-8 mx-auto">
                 <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
                     <div class="p-4">
-                        <PurchaseList :purchases="purchases" />
+                        <PurchaseList :purchases="purchases" :status-options="statusOptions" />
                     </div>
                 </div>
             </div>

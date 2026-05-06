@@ -35,6 +35,7 @@ class PurchaseController extends Controller
 
         return Inertia::render('purchase/Index', [
             'purchases' => $purchases,
+            'statusOptions' => PurchaseStatus::options(),
         ]);
     }
 
@@ -400,7 +401,7 @@ class PurchaseController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
-     public function bulkDelete(Request $request)
+    public function bulkDelete(Request $request)
     {
         $request->validate([
             'ids' => 'required|array',
@@ -410,6 +411,25 @@ class PurchaseController extends Controller
         Purchase::whereIn('id', $request->ids)->delete();
 
         return redirect()->route('purchases.index')->with('success', 'Selected purchases deleted successfully.');
+    }
+
+    public function bulkStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:purchases,id',
+            'status' => 'required|string',
+        ]);
+
+        // optional: validate enum
+        if (!PurchaseStatus::tryFrom($request->status)) {
+            return back()->with('error', 'Invalid status');
+        }
+
+        Purchase::whereIn('id', $request->ids)
+            ->update(['status' => $request->status]);
+
+        return back()->with('success', 'Status updated');
     }
 
     public function pushToXero(Purchase $purchase, XeroService $xero)

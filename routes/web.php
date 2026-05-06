@@ -80,7 +80,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('purchases', PurchaseController::class);
     
-       Route::post('/purchases/bulk-delete', [PurchaseController::class, 'bulkDelete'])->name('purchases.bulk-delete');
+    Route::post('/purchases/bulk-delete', [PurchaseController::class, 'bulkDelete'])->name('purchases.bulk-delete');
+    Route::post('/purchases/bulk-status', [PurchaseController::class, 'bulkStatus'])->name('purchases.bulkStatus');
 
 
     Route::get('/listings', [ListingController::class, 'index'])->name('listings.index');
