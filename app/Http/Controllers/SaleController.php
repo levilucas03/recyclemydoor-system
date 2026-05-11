@@ -15,17 +15,68 @@ use App\Models\ProductPrice;
 
 class SaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->search;
+
         $sales = Sale::with([
-                'contact', 
-                'source'
+                'contact',
+                'source',
+                'items.product',
             ])
+
+            ->when($search, function ($query) use ($search) {
+
+                $query->where(function ($q) use ($search) {
+
+                    // ---------------------
+                    // SALE ID
+                    // ---------------------
+                    $q->where('id', 'like', "%{$search}%");
+
+                    // ---------------------
+                    // CONTACT SEARCH
+                    // ---------------------
+                    $q->orWhereHas('contact', function ($contact) use ($search) {
+
+                        $contact
+                            ->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+
+                            ->orWhereRaw(
+                                "CONCAT(first_name, ' ', last_name) LIKE ?",
+                                ["%{$search}%"]
+                            )
+
+                            ->orWhere('telephone', 'like', "%{$search}%")
+                            ->orWhere('mobile', 'like', "%{$search}%")
+                            ->orWhere('postcode', 'like', "%{$search}%");
+                    });
+
+                    // ---------------------
+                    // PRODUCT SKU SEARCH
+                    // ---------------------
+                    $q->orWhereHas('items.product', function ($product) use ($search) {
+
+                        $product->where('sku', 'like', "%{$search}%");
+
+                    });
+
+                });
+
+            })
+
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Sales/Index', [
-            'sales' => $sales
+            'sales' => $sales,
+
+            'filters' => [
+                'search' => $search,
+            ]
         ]);
     }
 

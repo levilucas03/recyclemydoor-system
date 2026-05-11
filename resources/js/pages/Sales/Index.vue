@@ -1,14 +1,30 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { router, Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import { useDateFormatter } from '@/composables/useDateFormatter'
+import debounce from 'lodash/debounce'
 
 const { formatPretty } = useDateFormatter()
 
 const props = defineProps({
-    sales: Object
+    sales: Object,
+     ilters: Object,
 })
+
+const search = ref(props.filters?.search || '')
+
+// Auto search with debounce
+watch(search, debounce((value) => {
+
+    router.get(route('sales.index'), {
+        search: value
+    }, {
+        preserveState: true,
+        replace: true,
+    })
+
+}, 300))
 
 const selected = ref([])
 const selectAll = ref(false)
@@ -47,6 +63,16 @@ function goToSale(sale) {
             <div class="max-w-7xl sm:px-6 lg:px-8 mx-auto">
                 <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
                     <div class="p-4">
+
+                         <!-- Search -->
+            <div class="mb-6">
+                <input
+                    v-model="search"
+                    type="text"
+                    placeholder="Search customer, phone, postcode, SKU..."
+                    class="w-full border rounded-lg px-4 py-2"
+                />
+            </div>
 
                         <!-- Bulk Actions -->
                         <div class="flex justify-between items-center mb-4">
