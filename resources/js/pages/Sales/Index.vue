@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { router, Head } from '@inertiajs/vue3'
+import { router, Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import { useDateFormatter } from '@/composables/useDateFormatter'
 
@@ -179,6 +179,17 @@ function goToSale(sale) {
                                     <span v-else class="text-gray-400">Unpaid</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                            <Link
+                                v-for="link in sales.links"
+                                :key="link.label"
+                                :href="link.url || ''"
+                                v-html="link.label"
+                                class="px-3 py-1 border rounded"
+                                :class="{ 'bg-gray-200': link.active }"
+                            />
                         </div>
                     </div>
                 </div>
