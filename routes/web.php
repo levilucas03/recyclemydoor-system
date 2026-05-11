@@ -80,7 +80,9 @@ Route::middleware('auth')->group(function () {
                 return [
                     'id' => $product->id,
                     'title' => $product->title,
-                    'image' => '/storage/' . $product->primaryImage->path ?? '',
+                    'image' => optional($product->primaryImage)->path
+                        ? '/storage/' . $product->primaryImage->path
+                        : null,
                     'size' => "{$product->width} x {$product->height}",
                     'price' => $product->prices->firstWhere('type', 'website')->price ?? 0
                 ];
