@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use App\Models\Purchase;
 use App\Models\Product;
 use App\Models\FuelLog;
+use App\Models\SaleItem;
+use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -75,6 +77,41 @@ class DashboardController extends Controller
 
         $avgDaily = round($last31 / 31, 2);
 
+        $thisWeekDelivery = SaleItem::query()
+            ->where('type', 'delivery')
+            ->whereHas('sale', function ($q) {
+                $q->whereBetween('invoice_date', [
+                    now()->startOfWeek(),
+                    now()
+                ]);
+            })
+            ->sum('total');
+
+        $totalDeliveryRevenue = SaleItem::where('type', 'delivery')
+            ->sum('total');
+
+        $thisMonthDelivery = SaleItem::query()
+            ->where('type', 'delivery')
+            ->whereHas('sale', function ($q) {
+                $q->whereBetween('invoice_date', [
+                    now()->startOfMonth(),
+                    now()
+                ]);
+            })
+            ->sum('total');
+
+        $weeklyProfit = $thisWeekDelivery - $thisWeekFuel;
+        $monthlyProfit = $thisMonthDelivery - $thisMonthFuel;
+
+        $weeklyCoverage = $thisWeekFuel > 0
+            ? ($thisWeekDelivery / $thisWeekFuel) * 100
+            : 0;
+
+        $monthlyCoverage = $thisMonthFuel > 0
+                ? ($thisMonthDelivery / $thisMonthFuel) * 100
+                : 0;
+
+
         return inertia('Dashboard', [
             'purchaseStats' => [
                 'today' => $today,
@@ -95,7 +132,18 @@ class DashboardController extends Controller
                 'this_month' => $thisMonthFuel,
                 'last_month' => $lastMonthFuel,
                 'total' => $totalFuel,
-            ]
+            ],
+            'delivery' => [
+                'this_week_revenue' => $thisWeekDelivery,
+                'this_month_revenue' => $thisMonthDelivery,
+                'total_revenue' => $totalDeliveryRevenue,
+
+                'weekly_profit' => $weeklyProfit,
+                'monthly_profit' => $monthlyProfit,
+
+                'weekly_coverage' => round($weeklyCoverage, 1),
+                'monthly_coverage' => round($monthlyCoverage, 1),
+            ],
         ]);
     }
 }
