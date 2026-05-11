@@ -17,6 +17,7 @@
                         <input type="checkbox" v-model="selectAll" @change="toggleAll" />
                     </th>
                     <th></th>
+                    <th class="p-2 text-left">Sku</th>
                     <th class="p-2 text-left">Title</th>
                     <th class="p-2 text-left">Size</th>
                     <th class="p-2 text-left">Category</th>
@@ -41,6 +42,7 @@
                         <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
                     </td>
 
+                    <td class="p-2">{{ product.sku }}</td>
                     <td class="p-2">{{ product.title }}</td>
                     <td class="p-2">{{ product.width }} x {{ product.height }}</td>
                     <td class="p-2">{{ product.categories?.[0]?.name }}</td>

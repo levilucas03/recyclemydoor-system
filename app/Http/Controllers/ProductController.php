@@ -17,21 +17,44 @@ use App\Models\ProductImage;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $products = Product::where('user_id', $user->id)
+
+        $products = Product::query()
+
+            ->where('user_id', $user->id)
+
             ->with([
                 'categories.parent',
                 'primaryImage'
             ])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
 
+            // 🔍 SEARCH
+            ->when($request->search, function ($query, $search) {
+
+                $query->where(function ($q) use ($search) {
+
+                    $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
+
+                });
+
+            })
+
+            ->orderBy('created_at', 'desc')
+
+            ->paginate(15)
+
+            ->withQueryString();
 
         return Inertia::render('product/Index', [
             'products' => $products,
-            'test' => 'tests'
+
+            // 👇 send filters back to Vue
+            'filters' => [
+                'search' => $request->search
+            ]
         ]);
     }
 // to do maybe have the attributes pulled in  as a function to clean this function up.
