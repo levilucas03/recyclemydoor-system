@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ProductModal from '@/components/ProductModal.vue'
@@ -23,8 +23,10 @@ const props = defineProps({
 const mappedProducts = (props.purchase?.products || []).map((product: any) => ({
     id: product.id,
     title: product.title ?? '',
+    sku: product.sku ?? '',
     width: product.width ?? '',
     height: product.height ?? '',
+    primary_image: product.primary_image ?? '',
 
     category_ids: product.categories?.map((c: any) => c.id) || [],
     material_id: product.attributes?.find((a: any) => a.group?.slug === 'material')?.id || null,
@@ -280,10 +282,27 @@ function submit() {
                 @save="saveProduct"
             />
 
+
             <div v-for="(product, index) in form.products" :key="index"
                 class="border p-3 rounded mb-2 flex justify-between items-center">
 
-                <div class="text-sm">
+                <div class="text-sm flex items-center">
+                    <span class="mx-2 ">
+                        <img
+                            v-if="product.primary_image"
+                            :src="`/storage/${product.primary_image.path}`"
+                            class="w-14 h-14 object-cover rounded cursor-pointer"
+                            @click.stop="openPreview(`/storage/${product.primary_image.path}`)"
+                        />
+                        <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
+                    </span>
+
+                    <span class="font-semibold">
+                        {{ product.sku }}
+                    </span>
+
+                    <span class="mx-2">•</span>
+                    
                     <span class="font-semibold">
                         {{ product.title }}
                         
@@ -299,6 +318,13 @@ function submit() {
                 </div>
 
                 <div class="flex gap-2">
+                    <button
+                        type="button"
+                        @click="router.visit(route('products.edit', product.id))"
+                        class="text-blue-600"
+                    >
+                        View
+                    </button>
                     <button type="button" @click="editProduct(index)" class="text-blue-600">
                         Edit
                     </button>

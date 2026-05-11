@@ -195,6 +195,7 @@ class PurchaseController extends Controller
             'products.categories',
             'products.attributes.group',
             'products.prices',
+            'products.primaryImage',
             'source',
         ]);
 
