@@ -4,6 +4,7 @@ import { useForm, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ProductModal from '@/components/ProductModal.vue'
+import ImagePreview from '@/components/ImagePreview.vue'
 
 // --------------------
 // PROPS
@@ -114,6 +115,15 @@ function clearContact() {
     form.address_2 = ''
     form.town_city = ''
     form.postcode = ''
+}
+
+
+const previewImage = ref<string | null>(null)
+const showPreview = ref(false)
+
+const openPreview = (src: string) => {
+    previewImage.value = src
+    showPreview.value = true
 }
 
 // --------------------
@@ -391,4 +401,11 @@ function submit() {
     Send to Xero
 </button>
 </AuthenticatedLayout>
+
+ <ImagePreview
+        :src="previewImage"
+        :show="showPreview"
+        @close="showPreview = false"
+    />
+    
 </template>
