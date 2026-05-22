@@ -386,8 +386,8 @@ function submit() {
 
                                 <!-- IMAGE -->
                                 <img
-                                    v-if="item.image"
-                                    :src="item.image"
+                                    v-if="item.product?.primary_image"
+                                    :src="`/storage/${item.product.primary_image.path}`"
                                     class="w-16 h-16 rounded border object-cover bg-gray-100"
                                 />
 
