@@ -165,8 +165,6 @@ class XeroService
 
         $lineItems = $builder->buildLineItems($sale);
 
-        // dd($lineItems);
-
         $contact = $this->updateOrCreateXeroContact($sale->contact);
 
         $invoice = new Invoice();

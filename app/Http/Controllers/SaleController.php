@@ -453,7 +453,7 @@ class SaleController extends Controller
     {
         // dd($sale);
         $sale->load([
-            'items',
+            'items.product',
             'contact',
         ]);
 

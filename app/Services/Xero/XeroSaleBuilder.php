@@ -29,9 +29,22 @@ class XeroSaleBuilder
 
     protected function buildDescription($item): string
     {
-        return collect([
-            $item->title
-        ])->filter()->implode(' | ');
+        // PRODUCT ITEMS
+        if ($item->type === 'product' && $item->product) {
+
+            return collect([
+                $item->product->sku,
+                $item->title,
+
+                $item->product->width && $item->product->height 
+                    ? "{$item->product->width}mm x {$item->product->height}mm"
+                    : null,
+
+            ])->filter()->implode(' | ');
+        }
+
+        // EVERYTHING ELSE
+        return $item->title;
     }
 
     protected function accountCodeFor($item): string
