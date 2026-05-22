@@ -116,6 +116,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('sales', SaleController::class);
     Route::post('/sales/bulk-delete', [SaleController::class, 'bulkDelete']);
+
+    Route::post('/sales/{sale}/xero', [SaleController::class, 'pushToXero'])
+    ->name('sales.xero.push');
 });
 
 require __DIR__.'/auth.php';

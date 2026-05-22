@@ -12,6 +12,7 @@ use Inertia\Inertia;
 use App\Enums\SaleStatus;
 use App\Models\Product;
 use App\Models\ProductPrice;
+use App\Services\XeroService;
 
 class SaleController extends Controller
 {
@@ -106,6 +107,7 @@ class SaleController extends Controller
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
+            'reference' => ['nullable', 'string', 'max:255'],
         ]);
 
 
@@ -168,6 +170,7 @@ class SaleController extends Controller
                     'total' => $lineTotal,
                     'account_code' => $item['account_code'] ?? null,
                     'note' => $item['note'] ?? null,
+                    
                 ]);
 
                 if (!empty($item['product_id'])) {
@@ -208,6 +211,7 @@ class SaleController extends Controller
             }
 
             $sale->update([
+                'reference' => $sale->generateReference(),
                 'total_amount' => $total,
                 'total_vat_amount' => $vatTotal,
             ]);
@@ -230,9 +234,10 @@ class SaleController extends Controller
     {
         $sale->load([
             'contact',
-            'items',
+            'items.product.primaryImage',
             'source'
         ]);
+
 
         return Inertia::render('Sales/Edit', [
             'sale' => $sale,
@@ -259,6 +264,7 @@ class SaleController extends Controller
             
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
+            'reference' => ['nullable', 'string', 'max:255'],
         ]);
 
         DB::transaction(function () use ($request, $sale) {
@@ -413,6 +419,7 @@ class SaleController extends Controller
             // UPDATE TOTALS
             // --------------------
             $sale->update([
+                'reference' => $sale->generateReference(),
                 'total_amount' => $total,
                 'total_vat_amount' => $vatTotal,
             ]);
@@ -440,6 +447,30 @@ class SaleController extends Controller
         Sale::whereIn('id', $request->ids)->delete();
 
         return back()->with('success', 'Selected sales deleted');
+    }
+
+    public function pushToXero(Sale $sale, XeroService $xero)
+    {
+        // dd($sale);
+        $sale->load([
+            'items',
+            'contact',
+        ]);
+
+        // try {
+
+            $invoice = $xero->createSaleInvoice($sale);
+
+            $sale->xero_id = $invoice->getInvoiceId();
+            $sale->save();
+
+            return back()->with('success', 'Sale pushed to Xero');
+
+        // } catch (\Throwable $e) {
+
+            return back()->with('error', $e->getMessage());
+
+        // }
     }
 
 }

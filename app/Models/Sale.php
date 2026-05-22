@@ -47,6 +47,8 @@ class Sale extends Model
 
         'internal_note',
         'customer_note',
+
+        'reference',
     ];
 
     public function items()
@@ -69,5 +71,32 @@ class Sale extends Model
     public function source()
     {
         return $this->belongsTo(Source::class);
+    }
+
+    public function generateReference(): string
+    {
+        $this->loadMissing('items.product');
+
+        $skus = $this->items
+            ->filter(fn ($item) =>
+                $item->type === 'product' &&
+                $item->product?->sku
+            )
+            ->pluck('product.sku')
+            ->unique()
+            ->values();
+
+        // ONE PRODUCT
+        if ($skus->count() === 1) {
+            return $this->id . ' - '. $skus->first();
+        }
+
+        // MULTIPLE PRODUCTS
+        if ($skus->count() > 1) {
+            return $this->id . '-' . $skus->implode(', ');
+        }
+
+        // NO PRODUCTS
+        return (string) $this->id;
     }
 }

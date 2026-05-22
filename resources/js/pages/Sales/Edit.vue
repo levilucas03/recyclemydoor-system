@@ -43,9 +43,10 @@ const form = useForm({
         type: item.type,
 
         product_id: item.product_id,
+        product: item.product,
 
         title: item.title,
-        sku: item.sku,
+        sku: item.product?.sku || '',
 
         image: item.image,
         size: item.size,
@@ -119,7 +120,7 @@ function addProduct(product: any) {
 
         product_id: product.id,
 
-        title: product.title,
+        title: product.sku ? `${product.sku} - ${product.title}` : product.title,
         sku: product.sku,
 
         image: product.image,
@@ -215,6 +216,7 @@ function submit() {
             Edit Sale
         </h2>
     </template>
+
 
     <div class="max-w-6xl mx-auto py-8 space-y-6">
 
@@ -392,12 +394,24 @@ function submit() {
                                 <!-- INFO -->
                                 <div class="flex-1 min-w-0">
 
+                                     
+
                                     <!-- SKU -->
-                                    <div
+                                   <div
                                         v-if="item.sku"
-                                        class="text-xs font-bold text-blue-600"
+                                        class="text-xs font-bold text-blue-600 flex items-center gap-2"
                                     >
-                                        SKU: {{ item.sku }}
+                                        <span>SKU: {{ item.sku }}</span>
+
+                                        <a
+                                            v-if="item.product_id"
+                                            :href="route('products.edit', item.product_id)"
+                                            target="_blank"
+                                            class="text-gray-500 hover:text-blue-600 underline font-normal"
+                                            @click.stop
+                                        >
+                                            View product
+                                        </a>
                                     </div>
 
                                     <!-- TITLE -->

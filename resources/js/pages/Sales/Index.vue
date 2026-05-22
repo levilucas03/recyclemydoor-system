@@ -14,6 +14,14 @@ const props = defineProps({
 
 const search = ref(props.filters?.search || '')
 
+function sendToXero(id) {
+    // if (!confirm('Send this sale to Xero?')) return
+
+    router.post(route('sales.xero.push', id), {}, {
+        preserveScroll: true,
+    })
+}
+
 // Auto search with debounce
 watch(search, debounce((value) => {
 
@@ -101,6 +109,7 @@ function goToSale(sale) {
                                         <th class="p-2 text-left">Source</th>
                                         <th class="p-2 text-right">Total</th>
                                         <th class="p-2 text-center">Paid</th>
+                                        <th class="p-2 text-center"></th>
                                     </tr>
                                 </thead>
 
@@ -165,6 +174,25 @@ function goToSale(sale) {
                                         <td class="p-2 text-center">
                                             <span v-if="sale.fully_paid" class="text-green-600">✔</span>
                                             <span v-else class="text-gray-400">✖</span>
+                                        </td>
+                                        <td class="p-2 text-center">
+                                            <button
+                                                v-if="!sale.xero_id"
+                                                @click.stop="sendToXero(sale.id)"
+                                                class="text-white px-2 py-1 rounded text-xs"
+                                            >
+
+                                                <img
+                                                    src="/images/xero.svg"
+                                                    class="w-5 h-5"
+                                                    :class="'grayscale'"
+                                                />
+                                            </button>
+
+                                            <img v-else src="/images/xero.svg"
+                                                class="w-5 h-5"
+                                                :class="'opacity-100'"
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>

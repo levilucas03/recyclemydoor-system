@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Purchase;
+use App\Models\Sale;
 use App\Models\Contact;
 use App\Services\Xero\XeroPurchaseBuilder;
+use App\Services\Xero\XeroSaleBuilder;
 use App\DataTransferObjects\Xero\CreatePurchasePayload;
 
 use Webfox\Xero\OauthCredentialManager;
@@ -155,5 +157,39 @@ class XeroService
         $contact->save();
 
         return $created;
+    }
+
+    public function createSaleInvoice(Sale $sale)
+    {
+        $builder = app(XeroSaleBuilder::class);
+
+        $lineItems = $builder->buildLineItems($sale);
+
+        // dd($lineItems);
+
+        $contact = $this->updateOrCreateXeroContact($sale->contact);
+
+        $invoice = new Invoice();
+
+        $dueDate = Carbon::parse($sale->invoice_date)->addDays(14);
+
+        $invoice
+            ->setType(Invoice::TYPE_ACCREC)
+            ->setContact($contact)
+            ->setLineItems($lineItems)
+            ->setDate($sale->invoice_date)
+            ->setDueDate($dueDate)
+            ->setReference($sale->reference ?? '')
+            ->setStatus(Invoice::STATUS_AUTHORISED);
+
+        $invoices = new Invoices();
+        $invoices->setInvoices([$invoice]);
+
+        $response = $this->accountingApi->createInvoices(
+            $this->getTenantId(),
+            $invoices
+        );
+
+        return $response->getInvoices()[0];
     }
 }
