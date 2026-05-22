@@ -50,7 +50,7 @@ class XeroSaleBuilder
     protected function accountCodeFor($item): string
     {
         return match ($item->type) {
-            'delivery' => '413', //Fuel & Vehicle Running Cost
+            'delivery' => '208', // Delivery Income
             'product' => '200',
             'custom' => '310', // cost of goods
             default => '200',
