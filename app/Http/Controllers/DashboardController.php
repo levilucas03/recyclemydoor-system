@@ -111,6 +111,77 @@ class DashboardController extends Controller
                 ? ($thisMonthDelivery / $thisMonthFuel) * 100
                 : 0;
 
+        $saleLast31Revenue = Sale::where('invoice_date', '>=', now()->subDays(31))
+            ->sum('total_amount');
+
+        $saleLast31Products = SaleItem::whereHas('sale', function ($q) {
+                $q->where('invoice_date', '>=', now()->subDays(31));
+            })
+            ->where('type', 'product')
+            ->sum('qty');
+
+        $salePrev31Revenue = Sale::whereBetween('invoice_date', [
+                now()->copy()->subDays(62),
+                now()->copy()->subDays(31)
+            ])
+            ->sum('total_amount');
+
+        $salePercentageChange = $salePrev31Revenue > 0
+            ? round((($saleLast31Revenue - $salePrev31Revenue) / $salePrev31Revenue) * 100, 1)
+            : null;
+
+        $salesStats = [
+
+            'today' => [
+                'revenue' => Sale::whereDate('invoice_date', today())
+                    ->sum('total_amount'),
+
+                'products' => SaleItem::whereHas('sale', function ($q) {
+                        $q->whereDate('invoice_date', today());
+                    })
+                    ->where('type', 'product')
+                    ->sum('qty'),
+            ],
+
+            'total' => [
+                'revenue' => Sale::sum('total_amount'),
+
+                'products' => SaleItem::where('type', 'product')
+                    ->sum('qty'),
+            ],
+
+            'last_90_days' => [
+                'revenue' => Sale::where('invoice_date', '>=', now()->subDays(90))
+                    ->sum('total_amount'),
+
+                'products' => SaleItem::whereHas('sale', function ($q) {
+                        $q->where('invoice_date', '>=', now()->subDays(90));
+                    })
+                    ->where('type', 'product')
+                    ->sum('qty'),
+            ],
+
+            'last_31_days' => [
+                'revenue' => $saleLast31Revenue,
+
+                'products' => $saleLast31Products,
+            ],
+
+            'last_7_days' => [
+                'revenue' => Sale::where('invoice_date', '>=', now()->subDays(7))
+                    ->sum('total_amount'),
+
+                'products' => SaleItem::whereHas('sale', function ($q) {
+                        $q->where('invoice_date', '>=', now()->subDays(7));
+                    })
+                    ->where('type', 'product')
+                    ->sum('qty'),
+            ],
+
+            'percentageChange' => $salePercentageChange,
+        ];
+        
+
 
         return inertia('Dashboard', [
             'purchaseStats' => [
@@ -144,6 +215,8 @@ class DashboardController extends Controller
                 'weekly_coverage' => round($weeklyCoverage, 1),
                 'monthly_coverage' => round($monthlyCoverage, 1),
             ],
+            'salesStats' => $salesStats
+            
         ]);
     }
 }

@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import FuelCard from '@/Components/Dashboard/FuelCard.vue';
 import PurchaseCard from '@/Components/Dashboard/PurchaseCard.vue';
+import SaleCard from '@/Components/Dashboard/SaleCard.vue';
 import { Head } from '@inertiajs/vue3';
 import DeliveryCoverageCard from '@/Components/Dashboard/DeliveryCoverageCard.vue'
 import LeviTry from '@/components/LeviTry.vue';
@@ -11,6 +12,7 @@ defineProps({
     purchaseStats: Object,
     fuel: Object,
     delivery: Object,
+    salesStats: Object,
 });
 
 // helper to format currency
@@ -45,6 +47,7 @@ const percentageChange = (current, previous) => {
             <PurchaseCard :purchaseStats="purchaseStats" />
             <FuelCard :fuel="fuel" />
             <DeliveryCoverageCard :delivery="delivery" />
+            <SaleCard :salesStats="salesStats" />
 
 
             
