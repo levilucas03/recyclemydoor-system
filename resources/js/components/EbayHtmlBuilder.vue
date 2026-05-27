@@ -167,12 +167,6 @@ const htmlOutput = computed(() => {
         </div>
     </div>
 
-    ${productImage.value ? `
-    <div style="max-width:1000px;margin:30px auto 0;padding:0 20px;">
-        <img src="${productImage.value}" style="width:100%;max-height:520px;object-fit:cover;border-radius:18px;display:block;">
-    </div>
-    ` : ''}
-
    
 
     ${measurementCss}
@@ -304,7 +298,7 @@ const htmlOutput = computed(() => {
                 <td style="padding:14px;font-weight:bold;">
                     Traffic Door
                 </td>
-                <td style="padding:14px;">
+                <td style="padding:14px;border-bottom:1px solid #ececec;">
                     ${escapeHtml(getAttribute('traffic-door'))}
                 </td>
             </tr>
