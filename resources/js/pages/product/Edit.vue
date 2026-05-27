@@ -4,6 +4,7 @@ import { router, useForm, Link } from '@inertiajs/vue3'
 import { debounce } from 'lodash'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import GenerateTitle from '@/components/GenerateTitle.vue'
+import EbayHtmlBuilder from '@/components/EbayHtmlBuilder.vue'
 
 const getPrice = (type) => {
     return props.product.prices.find(p => p.type === type)?.price ?? ''
@@ -384,5 +385,8 @@ function manualSave() {
             </div>
 
         </form>
+
+        <EbayHtmlBuilder :product="product" />
+        
     </AuthenticatedLayout>
 </template>
