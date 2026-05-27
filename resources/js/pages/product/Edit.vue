@@ -10,6 +10,7 @@ const getPrice = (type) => {
     return props.product.prices.find(p => p.type === type)?.price ?? ''
 }
 
+
 // ---------------------
 // PROPS
 // ---------------------
@@ -19,6 +20,7 @@ const props = defineProps({
     materials: Array,
     colours: Array,
     conditions: Array,
+    trafficDoors: Array,
     openings: Array,
     configurations: Array,
     categories: Array,
@@ -39,9 +41,13 @@ const form = useForm({
     title: props.product.title,
     status: props.product.status ?? 'pending',
 
+    description: props.product.description ?? '',
+    notes: props.product.notes,
+
     brand_id: props.product.brand_id,
     material_id: props.product.material_id,
     colour_id: props.product.colour_id,
+    traffic_door_id: props.product.traffic_door_id,
     condition_id: props.product.condition_id,
     opening_id: props.product.opening_id,
     configuration_id: props.product.configuration_id,
@@ -182,8 +188,6 @@ function manualSave() {
 
         <form @submit.prevent="manualSave">
 
-            <!-- <pre>{{ form }}</pre> -->
-
             <!-- GENERAL + ATTRIBUTES -->
             <div class="max-w-5xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -234,9 +238,15 @@ function manualSave() {
                     </div>
 
                     
-
-                    <input v-model="form.sku" placeholder="SKU" class="w-full border p-2 mb-2" />
-                    <input v-model="form.title" placeholder="Title" class="w-full border p-2 mb-2" />
+                    <label>
+                        SKU
+                        <input v-model="form.sku" placeholder="SKU" class="w-full border p-2 mb-2" />
+                    </label>
+                    <label>
+                        Title
+                        <input v-model="form.title" placeholder="Title" class="w-full border p-2 mb-2" />
+                    </label>
+                    
                     <GenerateTitle
                         :material-id="form.material_id"
                         :colour-id="form.colour_id"
@@ -246,16 +256,43 @@ function manualSave() {
                         :categories="categories"
                         @generated="form.title = $event"
                     />
-                    <input v-model="form.width" placeholder="Width" class="w-full border p-2 mb-2" />
-                    <input v-model="form.height" placeholder="Height" class="w-full border p-2 mb-2" />
-                    <input v-model="form.depth" placeholder="Depth" class="w-full border p-2" />
+                    <label class="mb-2 mt-2 d-block">
+                        <h2>Width</h2>
+                        <input v-model="form.width" placeholder="Width" class="w-full border p-2 mb-2" />
+                    </label>
+                    
+                    <label class="mb-2 d-block">
+                        <h2>Height</h2>
+                        <input v-model="form.height" placeholder="Height" class="w-full border p-2 mb-2" />
+                    </label>
+                     <label class="mb-2 d-block">
+                        <h2>Depth</h2>
+                        <input v-model="form.depth" placeholder="Depth" class="w-full border p-2" />
+                     </label>
+                    
                 </div>
 
                 <!-- ATTRIBUTES -->
                 <div class="p-6 bg-white shadow rounded-xl">
                     <h2 class="mb-4 font-semibold">Attributes</h2>
 
-                    <select v-model="form.brand_id" class="w-full border p-2 mb-2">
+                    <h2 class="mb-4 font-semibold">Configuration</h2>
+
+                    <select v-model="selectedConfigParent" class="w-full border p-2 mb-4">
+                        <option :value="null">Select Type</option>
+                        <option v-for="p in configParents" :key="p.id" :value="p.id">
+                            {{ p.name }}
+                        </option>
+                    </select>
+
+                    <div v-if="configChildren.length" class="flex flex-wrap gap-2">
+                        <label v-for="child in configChildren" :key="child.id" class="flex items-center gap-2 border px-3 py-1 rounded cursor-pointer">
+                            <input type="radio" :value="child.id" v-model="form.configuration_id" />
+                            {{ child.name }}
+                        </label>
+                    </div>
+
+                    <select v-model="form.brand_id" class="w-full border p-2 mb-2 mt-4">
                         <option :value="null">Brand</option>
                         <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option>
                     </select>
@@ -270,6 +307,11 @@ function manualSave() {
                         <option v-for="c in colours" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
 
+                     <select v-model="form.traffic_door_id" class="w-full border p-2 mb-2">
+                        <option :value="null">Traffic Door</option>
+                        <option v-for="c in trafficDoors" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    </select>
+
                     <select v-model="form.condition_id" class="w-full border p-2 mb-2">
                         <option :value="null">Condition</option>
                         <option v-for="c in conditions" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -280,7 +322,28 @@ function manualSave() {
                         <option v-for="o in openings" :key="o.id" :value="o.id">{{ o.name }}</option>
                     </select>
 
-                    <h2 class="mb-4 font-semibold mt-2 ">Prices</h2>
+                    
+
+                </div>
+
+                
+            </div>
+
+             <div class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
+                <h2 class="mb-4 font-semibold">Description</h2>
+                <textarea
+                    v-model="form.description"
+                    class="w-full border rounded p-3 min-h-[200px]"
+                    placeholder="Enter product description..."
+                ></textarea>
+                
+            </div>
+
+            
+
+            <!-- Prices -->
+            <div class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
+                <h2 class="mb-4 font-semibold mt-2 ">Prices</h2>
 
                     <div class="grid grid-cols-2 gap-4 ">
     
@@ -300,37 +363,10 @@ function manualSave() {
                             Sold Price
                             <input v-model="form.sold_price" class="border p-2 w-full" />
                         </label>
-
-
-                       
-                        
-
                     </div>
-
-                </div>
-
-                
             </div>
 
-            <!-- CONFIGURATION -->
-            <div class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
-                <h2 class="mb-4 font-semibold">Configuration</h2>
-
-                <select v-model="selectedConfigParent" class="w-full border p-2 mb-4">
-                    <option :value="null">Select Type</option>
-                    <option v-for="p in configParents" :key="p.id" :value="p.id">
-                        {{ p.name }}
-                    </option>
-                </select>
-
-                <div v-if="configChildren.length" class="flex flex-wrap gap-2">
-                    <label v-for="child in configChildren" :key="child.id" class="flex items-center gap-2 border px-3 py-1 rounded cursor-pointer">
-                        <input type="radio" :value="child.id" v-model="form.configuration_id" />
-                        {{ child.name }}
-                    </label>
-                </div>
-            </div>
-
+           
             <!-- CATEGORIES -->
             <div class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
                 <h2 class="mb-4 font-semibold">Categories</h2>
@@ -384,7 +420,7 @@ function manualSave() {
                 </button>
             </div>
 
-        </form>
+        </form>  
 
         <EbayHtmlBuilder :product="product" />
         

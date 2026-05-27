@@ -92,17 +92,25 @@ class Product extends Model
     {
         $this->loadMissing('attributes.group');
 
-        $productAttributes = collect($this->attributes()->get())
-            ->keyBy(fn ($attr) => $attr->group->slug);
+        $productAttributes = collect($this->getRelation('attributes'))
+            ->keyBy(fn ($attr) => $attr->group?->slug);
 
         foreach ($groups as $group) {
+
+            $field = str_replace('-', '_', $group) . '_id';
+
             $this->setAttribute(
-                $group . '_id',
+                $field,
                 optional($productAttributes->get($group))->id
             );
         }
 
         return $this;
+    }
+
+    public function configuration()
+    {
+        return $this->belongsTo(Attribute::class, 'configuration_id');
     }
 
     public function images()

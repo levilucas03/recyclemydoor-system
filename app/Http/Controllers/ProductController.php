@@ -85,7 +85,8 @@ class ProductController extends Controller
             'categories',
             'purchase.contact',
             'primaryImage',
-            'prices'
+            'prices',
+            'configuration',
             
         ]); 
 
@@ -96,9 +97,11 @@ class ProductController extends Controller
         //     ];
         // })->toArray();
 
-        $groups = ['brand', 'material', 'colour', 'condition', 'opening', 'configuration'];
+        $groups = ['brand', 'material', 'colour', 'condition', 'opening', 'configuration', 'traffic-door'];
 
         $product->loadAttributeGroupIds($groups);
+
+        // dd($product); 
 
         $attributesByGroup = Attribute::groupedByGroupSlugs($groups);
 
@@ -107,6 +110,9 @@ class ProductController extends Controller
         $colours = $attributesByGroup->get('colour', collect());
         $conditions = $attributesByGroup->get('condition', collect());
         $openings = $attributesByGroup->get('opening', collect());
+        $trafficDoors = $attributesByGroup->get('traffic-door', collect());
+
+        // dd( $product->loadAttributeGroupIds($groups););
         
         $configurations = Attribute::whereHas('group', function ($q) {
             $q->where('slug', 'configuration');
@@ -130,6 +136,7 @@ class ProductController extends Controller
 
 
         // dd($product->getPrice('purchase'));
+        
 
 
         return Inertia::render('product/Edit', [
@@ -143,7 +150,7 @@ class ProductController extends Controller
             'parts' => $parts,
             'categories' => $categories,
             'statuses' => $statuses,
-            // 'prices' => $prices,
+            'trafficDoors' => $trafficDoors,
         ]);
     }
 
@@ -156,6 +163,9 @@ class ProductController extends Controller
             'height' => 'required|numeric',
             'depth' => 'required|numeric',
 
+            'description' => 'nullable|string',
+            'notes' => 'nullable|string',
+
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
 
@@ -165,6 +175,7 @@ class ProductController extends Controller
             'brand_id' => 'nullable|exists:attributes,id',
             'material_id' => 'nullable|exists:attributes,id',
             'colour_id' => 'nullable|exists:attributes,id',
+            'traffic_door_id' => 'nullable|exists:attributes,id',
             'condition_id' => 'nullable|exists:attributes,id',
             'opening_id' => 'nullable|exists:attributes,id',
             'configuration_id' => 'nullable|exists:attributes,id',
@@ -184,16 +195,22 @@ class ProductController extends Controller
             'height' => $validated['height'],
             'depth' => $validated['depth'],
             'status' => $validated['status'],
+            'description' => $validated['description'],
         ]);
+
+
 
         $singleAttributes = array_filter([
             $request->brand_id,
             $request->material_id,
             $request->colour_id,
             $request->condition_id,
+            $request->traffic_door_id,
             $request->opening_id,
             $request->configuration_id,
         ]);
+
+
 
         $this->savePrice($product, 'website', $request->website_price);
         $this->savePrice($product, 'sold', $request->sold_price);
@@ -276,6 +293,7 @@ class ProductController extends Controller
             $request->brand_id,
             $request->material_id,
             $request->colour_id,
+            $request->trafficDoor_id,
             $request->opening_id,
             $request->configuration_id
         ]);
