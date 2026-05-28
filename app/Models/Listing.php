@@ -20,4 +20,9 @@ class Listing extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function platformLinks()
+    {
+        return $this->hasMany(ListingPlatformLink::class);
+    }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\ListingPublishController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
@@ -126,6 +127,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/listing-platforms/{listingPlatform}/test',
         [ListingPlatformController::class, 'test'])->name('listing-platforms.test');
+
+    Route::post('/listing-platform-links/{link}/publish', [ListingPublishController::class, 'store'])
+        ->name('listing-platform-links.publish');
 });
 
 require __DIR__.'/auth.php';

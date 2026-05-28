@@ -1,28 +1,38 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import { useForm, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
+    listing: Object,
     products: Array,
     platforms: Array,
+    selected_platform_ids: Array,
 })
 
+const currentProduct = props.listing.products?.[0] ?? null
+
 const form = useForm({
-    title: '',
-    notes: '',
-    product_id: null,
-    platform_ids: [],
+    title: props.listing.title ?? '',
+    notes: props.listing.notes ?? '',
+    product_id: currentProduct?.id ?? null,
+    platform_ids: props.selected_platform_ids ?? [],
 })
 
 const submit = () => {
-    form.post(route('listings.store'))
+    form.put(route('listings.update', props.listing.id))
 }
 </script>
 
 <template>
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold">Create Listing</h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">Edit Listing</h2>
+
+                <Link :href="route('listings.index')" class="text-sm text-blue-600">
+                    Back to listings
+                </Link>
+            </div>
         </template>
 
         <form @submit.prevent="submit" class="max-w-4xl mx-auto mt-10 bg-white shadow rounded-xl p-6">
@@ -77,9 +87,15 @@ const submit = () => {
                 </p>
             </div>
 
-            <button class="bg-blue-600 text-white px-4 py-2 rounded" :disabled="form.processing">
-                Create Listing
-            </button>
+            <div class="flex gap-3">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded" :disabled="form.processing">
+                    Save Listing
+                </button>
+
+                <Link :href="route('listings.index')" class="px-4 py-2 rounded border">
+                    Cancel
+                </Link>
+            </div>
 
         </form>
     </AuthenticatedLayout>

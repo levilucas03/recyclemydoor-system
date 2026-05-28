@@ -13,7 +13,19 @@ return new class extends Migration
     {
         Schema::create('listing_platform_links', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('listing_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('listing_platform_id')->constrained()->cascadeOnDelete();
+
+            $table->string('external_id')->nullable(); // WordPress product ID
+            $table->string('status')->default('draft'); // draft, published, failed
+            $table->json('payload')->nullable();
+            $table->text('error')->nullable();
+            $table->timestamp('published_at')->nullable();
+
             $table->timestamps();
+
+            $table->unique(['listing_id', 'listing_platform_id']);
         });
     }
 

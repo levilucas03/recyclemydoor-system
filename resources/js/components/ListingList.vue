@@ -79,6 +79,19 @@ function bulkDelete() {
                 <td class="p-2">&pound;0.00</td>
                 <td class="p-2">
                     <Link :href="route('listings.edit', listing.id)" class="text-blue-600 hover:underline">Edit</Link>
+                    <div v-for="link in listing.platform_links" :key="link.id">
+                        <button
+                            v-if="link.status !== 'published'"
+                            @click="router.post(route('listing-platform-links.publish', link.id))"
+                            class="bg-green-600 text-white px-3 py-1 rounded text-xs"
+                        >
+                            Push to {{ link.platform.name }}
+                        </button>
+
+                        <span v-else class="text-green-600 text-xs">
+                            Published to {{ link.platform.name }}
+                        </span>
+                    </div>
                 </td>
             </tr>
         </tbody>
