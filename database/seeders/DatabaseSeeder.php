@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             VehicleSeeder::class,
             FuelLogSeeder::class,
+            ListingPlatformSeeder::class,
     
         ]);
     }

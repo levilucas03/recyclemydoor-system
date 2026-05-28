@@ -8,6 +8,8 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
+use App\Http\Controllers\ListingPlatformController;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -119,6 +121,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/sales/{sale}/xero', [SaleController::class, 'pushToXero'])
     ->name('sales.xero.push');
+
+    Route::resource('listing-platforms', ListingPlatformController::class);
+
+    Route::post('/listing-platforms/{listingPlatform}/test',
+        [ListingPlatformController::class, 'test'])->name('listing-platforms.test');
 });
 
 require __DIR__.'/auth.php';

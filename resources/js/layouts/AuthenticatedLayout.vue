@@ -107,6 +107,11 @@ const showingNavigationDropdown = ref(false);
                                         >
                                             Profile
                                         </DropdownLink>
+                                         <DropdownLink
+                                            :href="route('listing-platforms.index')"
+                                        >
+                                            Listing Platforms
+                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
