@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/card';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import { ref, watch } from 'vue'
-import { Head, router } from '@inertiajs/vue3';
-import ProductList from '@/components/ProductList.vue';
+import { Head, router, Link } from '@inertiajs/vue3'
+import ProductList from '@/components/ProductList.vue'
 
 const props = defineProps({
-    products: Array,
+    products: Object,
     filters: Object,
     test: String,
-    stats: Object
+    stats: Object,
 })
 
 const search = ref(props.filters?.search || '')
@@ -17,92 +16,116 @@ const search = ref(props.filters?.search || '')
 let timer = null
 
 watch(search, (value) => {
-
     clearTimeout(timer)
 
     timer = setTimeout(() => {
-
-        router.get('/products', {
-            search: value
+        router.get(route('products.index'), {
+            search: value,
+            status: props.filters?.status || null,
         }, {
             preserveState: true,
-            replace: true
+            replace: true,
         })
-
     }, 300)
-
 })
 
+const statusLink = (status = null) => {
+    return route('products.index', {
+        search: props.filters?.search || null,
+        status,
+    })
+}
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Products" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">Products</h2>
-            <!-- <a :href="route('products.create')" class="text-blue-600 hover:underline">Add Product</a> -->
+            <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                Products
+            </h2>
         </template>
-        
+
         <div class="max-w-7xl mx-auto mt-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- Main product list -->
             <div class="lg:col-span-3">
                 <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
-                    <div class="flex justify-between items-center p-3">
+                    <div class="flex justify-between items-center p-3 gap-3">
 
                         <input
                             v-model="search"
                             placeholder="Search products..."
-                            class="border p-2 rounded w-80"
+                            class="border p-2 rounded w-full md:w-80"
                         />
 
-                        <a
-                            href="/products/create"
-                            class="bg-blue-600 text-white px-4 py-2 rounded"
+                        <Link
+                            :href="route('products.create')"
+                            class="bg-blue-600 text-white px-4 py-2 rounded whitespace-nowrap"
                         >
                             + Product
-                        </a>
+                        </Link>
 
                     </div>
 
                     <div class="p-4 pt-0">
                         <ProductList :products="products" />
-
                     </div>
                 </div>
             </div>
-            <!-- Sidebar stats -->
+
             <aside class="lg:col-span-1 space-y-4">
 
                 <div class="bg-white shadow rounded-xl p-5">
                     <h3 class="font-semibold mb-4">Stock Overview</h3>
 
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between">
+                    <div class="space-y-2 text-sm">
+
+                        <Link
+                            :href="statusLink(null)"
+                            class="flex justify-between p-2 rounded hover:bg-gray-100"
+                            :class="{ 'bg-gray-100 font-semibold': !filters?.status }"
+                        >
                             <span>Total Items</span>
                             <strong>{{ stats.total }}</strong>
-                        </div>
+                        </Link>
 
-                        <div class="flex justify-between">
+                        <Link
+                            :href="statusLink('listed')"
+                            class="flex justify-between p-2 rounded hover:bg-gray-100"
+                            :class="{ 'bg-gray-100 font-semibold': filters?.status === 'listed' }"
+                        >
                             <span>Listed</span>
                             <strong>{{ stats.listed }}</strong>
-                        </div>
+                        </Link>
 
-                        <div class="flex justify-between">
+                        <Link
+                            :href="statusLink('pending')"
+                            class="flex justify-between p-2 rounded hover:bg-gray-100"
+                            :class="{ 'bg-gray-100 font-semibold': filters?.status === 'pending' }"
+                        >
                             <span>Pending</span>
                             <strong>{{ stats.pending }}</strong>
-                        </div>
+                        </Link>
 
-                        <div class="flex justify-between">
+                        <Link
+                            :href="statusLink('sold')"
+                            class="flex justify-between p-2 rounded hover:bg-gray-100"
+                            :class="{ 'bg-gray-100 font-semibold': filters?.status === 'sold' }"
+                        >
                             <span>Sold</span>
                             <strong>{{ stats.sold }}</strong>
-                        </div>
+                        </Link>
 
-                        <div class="flex justify-between border-t pt-3">
+                        <Link
+                            :href="statusLink('not_sold')"
+                            class="flex justify-between p-2 rounded hover:bg-gray-100 border-t pt-3"
+                            :class="{ 'bg-gray-100 font-semibold': filters?.status === 'not_sold' }"
+                        >
                             <span>Not Sold</span>
                             <strong>{{ stats.not_sold }}</strong>
-                        </div>
+                        </Link>
+
                     </div>
                 </div>
 
@@ -120,7 +143,5 @@ watch(search, (value) => {
 
             </aside>
         </div>
-    
-        
     </AuthenticatedLayout>
 </template>

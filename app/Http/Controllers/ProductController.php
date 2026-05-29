@@ -22,32 +22,44 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = Product::query()
+       $products = Product::query()
+        ->where('user_id', $user->id)
+        ->with([
+            'categories.parent',
+            'primaryImage'
+        ])
 
-            ->where('user_id', $user->id)
+        // Search
+        ->when($request->search, function ($query, $search) {
 
-            ->with([
-                'categories.parent',
-                'primaryImage'
-            ])
+            $query->where(function ($q) use ($search) {
 
-            // 🔍 SEARCH
-            ->when($request->search, function ($query, $search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('sku', 'like', "%{$search}%");
 
-                $query->where(function ($q) use ($search) {
+            });
+        })
 
-                    $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
+        // Status Filter
+        ->when($request->status, function ($query, $status) {
 
-                });
+            if ($status === 'not_sold') {
 
-            })
+                $query->where('status', '!=', 'sold');
 
-            ->orderBy('created_at', 'desc')
+            } else {
 
-            ->paginate(15)
+                $query->where('status', $status);
 
-            ->withQueryString();
+            }
+
+        })
+
+        ->orderBy('created_at', 'desc')
+
+        ->paginate(15)
+
+        ->withQueryString();
 
         $stats = [
             'total' => Product::where('user_id', auth()->id())->count(),
@@ -74,6 +86,17 @@ class ProductController extends Controller
                         ->where('status', '!=', 'sold');
                 })
                 ->sum('price'),
+
+            'in_stock' => Product::where('user_id', $user->id)
+                ->where('qty', '>', 0)
+                ->count(),
+
+            'stock_value' => ProductPrice::where('type', 'purchase')
+                ->whereHas('product', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)
+                    ->where('status', '!=', 'sold');
+                })
+                ->sum('price'),
         ];
 
         return Inertia::render('product/Index', [
@@ -81,7 +104,8 @@ class ProductController extends Controller
             'stats' => $stats,
             // 👇 send filters back to Vue
             'filters' => [
-                'search' => $request->search
+                'search' => $request->search,
+                'status' => $request->status,
             ]
         ]);
     }
