@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attribute;
 use App\Models\AttributeGroup;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\Category;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
@@ -48,9 +49,36 @@ class ProductController extends Controller
 
             ->withQueryString();
 
+        $stats = [
+            'total' => Product::where('user_id', auth()->id())->count(),
+
+            'listed' => Product::where('user_id', auth()->id())
+                ->where('status', 'listed')
+                ->count(),
+
+            'pending' => Product::where('user_id', auth()->id())
+                ->where('status', 'pending')
+                ->count(),
+
+            'sold' => Product::where('user_id', auth()->id())
+                ->where('status', 'sold')
+                ->count(),
+
+            'not_sold' => Product::where('user_id', auth()->id())
+                ->where('status', '!=', 'sold')
+                ->count(),
+
+            'not_sold_purchase_value' => ProductPrice::where('type', 'purchase')
+                ->whereHas('product', function ($query) {
+                    $query->where('user_id', auth()->id())
+                        ->where('status', '!=', 'sold');
+                })
+                ->sum('price'),
+        ];
+
         return Inertia::render('product/Index', [
             'products' => $products,
-
+            'stats' => $stats,
             // 👇 send filters back to Vue
             'filters' => [
                 'search' => $request->search

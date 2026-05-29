@@ -94,6 +94,7 @@ class PurchaseController extends Controller
             'products.*.price' => 'required|numeric|min:0',
             'products.*.width' => 'nullable|numeric',
             'products.*.height' => 'nullable|numeric',
+            'products.*.depth' => 'nullable|numeric',
             'products.*.colour' => 'nullable|string',
             'products.*.type' => 'nullable|string',
 
@@ -147,6 +148,7 @@ class PurchaseController extends Controller
                 'title' => $productData['title'],
                 'width' => $productData['width'] ?? null,
                 'height' => $productData['height'] ?? null,
+                'depth' => $productData['depth'] ?? null,
                 'colour' => $productData['colour'] ?? null,
                 'type' => $productData['type'] ?? null,
                 'user_id' => auth()->id(),
