@@ -59,6 +59,42 @@ class WooCommerceListingService
             ->where('type', 'website')
             ->value('price');
 
+
+   
+        $categories = $product->categories
+            ->filter(fn ($category) => $category->wordpress_term_id)
+            ->map(fn ($category) => [
+                'id' => (int) $category->wordpress_term_id,
+            ])
+            ->values()
+            ->toArray();
+
+        $attributes = $product->attributes
+            ->filter(fn ($attribute) => $attribute->wordpress_attribute_id && $attribute->wordpress_slug)
+            ->groupBy('wordpress_attribute_id')
+            ->map(function ($items) {
+                $first = $items->first();
+
+                return [
+                    'id' => (int) $first->wordpress_attribute_id,
+                    'options' => $items
+                        ->pluck('wordpress_slug')
+                        ->unique()
+                        ->values()
+                        ->toArray(),
+                    'visible' => true,
+                    'variation' => false,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $dimensions = [
+            'length' => (string) ($product->depth ?? ''),
+            'width'  => (string) ($product->width ?? ''),
+            'height' => (string) ($product->height ?? ''),
+        ];
+
         $payload = [
             'name' => $product->title,
             'type' => 'simple',
@@ -69,9 +105,12 @@ class WooCommerceListingService
             'sku' => $product->sku,
             'manage_stock' => true,
             'stock_quantity' => $product->quantity ?? 1,
+            'categories' => $categories,
+            'attributes' => $attributes,
+            'dimensions' => $dimensions,
         ];
         
-        dd($payload);
+        // dd($payload);
 
         if ($imageUrl) {
             $payload['images'] = [
@@ -79,13 +118,12 @@ class WooCommerceListingService
             ];
         }
 
-        if ($product->categories?->count()) {
-            $payload['categories'] = $product->categories->map(fn ($category) => [
-                'name' => $category->name,
-            ])->values()->all();
-        }
-
         if ($link->external_id) {
+            $client->put("products/{$link->external_id}", [
+                'categories' => [],
+                'attributes' => [],
+            ]);
+
             $response = $client->put("products/{$link->external_id}", $payload);
         } else {
             $response = $client->post('products', $payload);
@@ -173,8 +211,8 @@ class WooCommerceListingService
     }
 
     public function syncCategoryToWordPress(
-    ListingPlatform $platform,
-    Category $category
+        ListingPlatform $platform,
+        Category $category
     ): void {
         $config = $platform->config;
 
@@ -182,25 +220,47 @@ class WooCommerceListingService
             $config['site_url'],
             $config['consumer_key'],
             $config['consumer_secret'],
-            [
-                'version' => 'wc/v3',
-            ]
+            ['version' => 'wc/v3']
         );
 
         $existing = collect($client->get('products/categories', [
-            'search' => $category->name,
+            'slug' => $category->slug,
             'per_page' => 100,
         ]));
 
-        $term = $existing->first(function ($item) use ($category) {
-            return strtolower($item->name) === strtolower($category->name);
-        });
+        $term = $existing->first();
 
         if (! $term) {
-            $term = $client->post('products/categories', [
-                'name' => $category->name,
-                'slug' => $category->slug,
-            ]);
+            $existing = collect($client->get('products/categories', [
+                'search' => $category->name,
+                'per_page' => 100,
+            ]));
+
+            $term = $existing->first(function ($item) use ($category) {
+                return strtolower($item->name) === strtolower($category->name);
+            });
+        }
+
+        if (! $term) {
+            try {
+                $term = $client->post('products/categories', [
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                ]);
+            } catch (\Exception $e) {
+                $existing = collect($client->get('products/categories', [
+                    'search' => $category->name,
+                    'per_page' => 100,
+                ]));
+
+                $term = $existing->first(function ($item) use ($category) {
+                    return strtolower($item->name) === strtolower($category->name);
+                });
+
+                if (! $term) {
+                    throw $e;
+                }
+            }
         }
 
         $category->update([
