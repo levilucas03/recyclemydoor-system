@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attribute extends Model
 {
+
+    protected $fillable = [
+        'attribute_group_id',
+        'name',
+        'slug',
+        'wordpress_term_id',
+        'wordpress_slug',
+        'wordpress_taxonomy',
+        'wordpress_attribute_id',
+    ];
+
     public function group()
     {
         return $this->belongsTo(AttributeGroup::class, 'attribute_group_id');

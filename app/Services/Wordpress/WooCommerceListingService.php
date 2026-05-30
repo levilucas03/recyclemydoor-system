@@ -2,6 +2,10 @@
 
 namespace App\Services\WordPress;
 
+use App\Models\Attribute;
+use App\Models\AttributeGroup;
+use App\Models\ListingPlatform;
+
 use App\Models\ListingPlatformLink;
 use Automattic\WooCommerce\Client;
 use Illuminate\Support\Facades\Storage;
@@ -50,17 +54,23 @@ class WooCommerceListingService
             ];
         }
 
+        $websitePrice = $product->prices()
+            ->where('type', 'website')
+            ->value('price');
+
         $payload = [
             'name' => $product->title,
             'type' => 'simple',
             'status' => $config['default_status'] ?? 'draft',
-            'regular_price' => (string) ($product->website_price ?? '0'),
+            'regular_price' => (string) ($websitePrice ?? 0),
             'description' => $product->description ?? '',
             'short_description' => $link->listing->notes ?? '',
             'sku' => $product->sku,
             'manage_stock' => true,
             'stock_quantity' => $product->quantity ?? 1,
         ];
+        
+        dd($payload);
 
         if ($imageUrl) {
             $payload['images'] = [
@@ -87,5 +97,77 @@ class WooCommerceListingService
             'error' => null,
             'published_at' => now(),
         ]);
+    }
+
+    public function syncAttributeGroupToWordPress(
+        ListingPlatform $platform,
+        AttributeGroup $attributeGroup
+    ): void {
+        $config = $platform->config;
+
+        $client = new Client(
+            $config['site_url'],
+            $config['consumer_key'],
+            $config['consumer_secret'],
+            [
+                'version' => 'wc/v3',
+            ]
+        );
+
+        $attributeGroup->load('attributes');
+
+        $taxonomy = 'pa_' . str($attributeGroup->name)->slug('_');
+
+        // 1. Find or create the WooCommerce ATTRIBUTE, e.g. Material
+        $existingAttributes = collect($client->get('products/attributes', [
+            'search' => $attributeGroup->name,
+            'per_page' => 100,
+        ]));
+
+        $wooAttribute = $existingAttributes->first(function ($item) use ($attributeGroup) {
+            return strtolower($item->name) === strtolower($attributeGroup->name);
+        });
+
+        if (! $wooAttribute) {
+            $wooAttribute = $client->post('products/attributes', [
+                'name' => $attributeGroup->name,
+                'slug' => str($attributeGroup->name)->slug('_'),
+                'type' => 'select',
+                'order_by' => 'menu_order',
+                'has_archives' => true,
+            ]);
+        }
+
+        // Optional but recommended if you added fields to attribute_groups
+        $attributeGroup->update([
+            'wordpress_attribute_id' => $wooAttribute->id,
+            'wordpress_slug' => $wooAttribute->slug,
+        ]);
+
+        // 2. Find or create the TERMS under that attribute
+        foreach ($attributeGroup->attributes as $attribute) {
+            $existingTerms = collect($client->get("products/attributes/{$wooAttribute->id}/terms", [
+                'search' => $attribute->name,
+                'per_page' => 100,
+            ]));
+
+            $term = $existingTerms->first(function ($item) use ($attribute) {
+                return strtolower($item->name) === strtolower($attribute->name);
+            });
+
+            if (! $term) {
+                $term = $client->post("products/attributes/{$wooAttribute->id}/terms", [
+                    'name' => $attribute->name,
+                    'slug' => $attribute->slug,
+                ]);
+            }
+
+            $attribute->update([
+                'wordpress_term_id' => $term->id,
+                'wordpress_slug' => $term->slug,
+                'wordpress_taxonomy' => $taxonomy,
+                'wordpress_attribute_id' => $wooAttribute->id,
+            ]);
+        }
     }
 }

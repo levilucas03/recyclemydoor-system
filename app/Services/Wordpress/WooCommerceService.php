@@ -4,6 +4,8 @@ namespace App\Services\WordPress;
 
 use Automattic\WooCommerce\Client;
 use App\Models\ListingPlatform;
+use App\Models\Attribute;
+use App\Models\AttributeGroup;
 
 class WooCommerceService
 {
@@ -22,6 +24,20 @@ class WooCommerceService
             ]
         );
     }
+
+    public function republish(Product $product): void
+    {
+        $link = ListingPlatformLink::whereHas('listing.products', function ($query) use ($product) {
+            $query->where('products.id', $product->id);
+        })->first();
+
+        if (! $link) {
+            throw new \Exception('No listing found.');
+        }
+
+        $this->publish($link);
+    }
+
 
     public function test(): bool
     {

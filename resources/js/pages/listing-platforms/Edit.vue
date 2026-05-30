@@ -1,9 +1,12 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3'
+import { computed, ref, watch } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
     platform: Object,
+    attributeGroups: Array,
+
 })
 
 const form = useForm({
@@ -19,6 +22,45 @@ const form = useForm({
 const submit = () => {
     form.put(route('listing-platforms.update', props.platform.id))
 }
+
+const selectedGroupId = ref(props.attributeGroups?.[0]?.id ?? null)
+
+const selectedGroup = computed(() => {
+    return props.attributeGroups.find(group => group.id === selectedGroupId.value)
+})
+
+const mappingForm = useForm({
+    attributes: [],
+})
+
+watch(selectedGroup, (group) => {
+    mappingForm.attributes = (group?.attributes ?? []).map(attribute => ({
+        id: attribute.id,
+        name: attribute.name,
+        wordpress_term_id: attribute.wordpress_term_id,
+        wordpress_slug: attribute.wordpress_slug,
+        wordpress_taxonomy: attribute.wordpress_taxonomy,
+        wordpress_attribute_id: attribute.wordpress_attribute_id,
+    }))
+}, { immediate: true })
+
+const saveWordPressMappings = () => {
+    mappingForm.put(route('listing-platforms.wordpress-attributes.update', props.platform.id), {
+        preserveScroll: true,
+    })
+}
+
+const syncSelectedGroup = () => {
+    router.post(
+        route('listing-platforms.attribute-groups.sync-wordpress', {
+            listingPlatform: props.platform.id,
+            attributeGroup: selectedGroupId.value,
+        }),
+        {},
+        { preserveScroll: true }
+    )
+}
+
 </script>
 
 <template>
@@ -84,6 +126,102 @@ const submit = () => {
             <button class="bg-blue-600 text-white px-4 py-2 rounded" :disabled="form.processing">
                 Save Platform
             </button>
+
+            <button
+                type="button"
+                @click="syncSelectedGroup"
+                class="bg-green-600 text-white px-4 py-2 rounded"
+            >
+                Sync Selected Group to WordPress
+            </button>
         </form>
+
+        <div class="bg-white shadow rounded-xl p-6">
+
+            <div class="mt-8 border-t pt-6">
+                <h3 class="text-lg font-semibold mb-4">WordPress Attribute Mapping</h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Attribute Group</label>
+
+                    <select v-model="selectedGroupId" class="w-full border rounded p-2">
+                        <option
+                            v-for="group in attributeGroups"
+                            :key="group.id"
+                            :value="group.id"
+                        >
+                            {{ group.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div v-if="mappingForm.attributes.length" class="overflow-x-auto">
+                    <table class="w-full text-sm border">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Attribute</th>
+                                <th class="p-2 text-left">WP Term ID</th>
+                                <th class="p-2 text-left">WP Slug</th>
+                                <th class="p-2 text-left">WP Taxonomy</th>
+                                <th class="p-2 text-left">WP Attribute ID</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr
+                                v-for="attribute in mappingForm.attributes"
+                                :key="attribute.id"
+                                class="border-t"
+                            >
+                                <td class="p-2 font-medium">
+                                    {{ attribute.name }}
+                                </td>
+
+                                <td class="p-2">
+                                    <input
+                                        v-model="attribute.wordpress_term_id"
+                                        class="w-full border rounded p-2"
+                                        placeholder="23"
+                                    />
+                                </td>
+
+                                <td class="p-2">
+                                    <input
+                                        v-model="attribute.wordpress_slug"
+                                        class="w-full border rounded p-2"
+                                        placeholder="bi-fold-doors"
+                                    />
+                                </td>
+
+                                <td class="p-2">
+                                    <input
+                                        v-model="attribute.wordpress_taxonomy"
+                                        class="w-full border rounded p-2"
+                                        placeholder="product_cat"
+                                    />
+                                </td>
+
+                                <td class="p-2">
+                                    <input
+                                        v-model="attribute.wordpress_attribute_id"
+                                        class="w-full border rounded p-2"
+                                        placeholder="Only for pa_ attributes"
+                                    />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button
+                    type="button"
+                    @click="saveWordPressMappings"
+                    class="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+                    :disabled="mappingForm.processing"
+                >
+                    Save WordPress Mappings
+                </button>
+            </div>
+        </div>
     </AuthenticatedLayout>
 </template>

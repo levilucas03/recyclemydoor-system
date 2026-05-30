@@ -141,4 +141,11 @@ class Product extends Model
             }
         });
     }
+
+    public function websiteListingLink()
+    {
+        return ListingPlatformLink::whereHas('listing.products', function ($query) {
+            $query->where('products.id', $this->id);
+        })->first();
+    }
 }

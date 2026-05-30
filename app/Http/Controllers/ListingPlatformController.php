@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\ListingPlatform;
 use App\Services\WordPress\WooCommerceService;
+use App\Services\WordPress\WooCommerceListingService;
+use App\Models\AttributeGroup;
+use App\Models\Attribute;
+
 
 
 
@@ -20,8 +24,11 @@ class ListingPlatformController extends Controller
 
     public function edit(ListingPlatform $listingPlatform)
     {
-        return Inertia::render('listing-platforms/Edit', [
+        return inertia('listing-platforms/Edit', [
             'platform' => $listingPlatform,
+            'attributeGroups' => AttributeGroup::with('attributes')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -67,5 +74,38 @@ class ListingPlatformController extends Controller
                 $e->getMessage()
             );
         }
+    }
+
+    public function updateWordPressAttributes(Request $request, ListingPlatform $listingPlatform)
+    {
+        $data = $request->validate([
+            'attributes' => ['required', 'array'],
+            'attributes.*.id' => ['required', 'exists:attributes,id'],
+            'attributes.*.wordpress_term_id' => ['nullable', 'integer'],
+            'attributes.*.wordpress_slug' => ['nullable', 'string', 'max:255'],
+            'attributes.*.wordpress_taxonomy' => ['nullable', 'string', 'max:255'],
+            'attributes.*.wordpress_attribute_id' => ['nullable', 'integer'],
+        ]);
+
+        foreach ($data['attributes'] as $attributeData) {
+            Attribute::where('id', $attributeData['id'])->update([
+                'wordpress_term_id' => $attributeData['wordpress_term_id'] ?? null,
+                'wordpress_slug' => $attributeData['wordpress_slug'] ?? null,
+                'wordpress_taxonomy' => $attributeData['wordpress_taxonomy'] ?? null,
+                'wordpress_attribute_id' => $attributeData['wordpress_attribute_id'] ?? null,
+            ]);
+        }
+
+        return back()->with('success', 'WordPress attribute mappings updated.');
+    }
+
+    public function syncWordPressAttributeGroup(
+        ListingPlatform $listingPlatform,
+        AttributeGroup $attributeGroup,
+        WooCommerceListingService $woocommerce
+    ) {
+        $woocommerce->syncAttributeGroupToWordPress($listingPlatform, $attributeGroup);
+
+        return back()->with('success', 'Attribute group synced to WordPress.');
     }
 }

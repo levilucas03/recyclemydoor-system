@@ -1,5 +1,5 @@
 <script setup>
-import { useForm, Link } from '@inertiajs/vue3'
+import { useForm, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
@@ -10,6 +10,7 @@ const props = defineProps({
 })
 
 const currentProduct = props.listing.products?.[0] ?? null
+const platformLinks = props.listing.platform_links ?? []
 
 const form = useForm({
     title: props.listing.title ?? '',
@@ -20,6 +21,12 @@ const form = useForm({
 
 const submit = () => {
     form.put(route('listings.update', props.listing.id))
+}
+
+const republish = (linkId) => {
+    router.post(route('listing-platform-links.republish', linkId), {}, {
+        preserveScroll: true,
+    })
 }
 </script>
 
@@ -87,7 +94,19 @@ const submit = () => {
                 </p>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex gap-3 items-center">
+                <div v-if="platformLinks.length" class="flex gap-3">
+                    <button
+                        v-for="link in platformLinks"
+                        :key="link.id"
+                        type="button"
+                        @click="republish(link.id)"
+                        class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                    >
+                        Republish {{ link.platform?.name ?? 'Platform' }}
+                    </button>
+                </div>
+
                 <button class="bg-blue-600 text-white px-4 py-2 rounded" :disabled="form.processing">
                     Save Listing
                 </button>

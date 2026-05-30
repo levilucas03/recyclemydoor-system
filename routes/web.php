@@ -5,11 +5,11 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingPublishController;
+use App\Http\Controllers\ListingPlatformController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
-use App\Http\Controllers\ListingPlatformController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -130,6 +130,17 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/listing-platform-links/{link}/publish', [ListingPublishController::class, 'store'])
         ->name('listing-platform-links.publish');
+
+    Route::post('/listing-platform-links/{link}/republish', [ListingPublishController::class, 'republish'])
+    ->name('listing-platform-links.republish');
+
+    Route::put('/listing-platforms/{listingPlatform}/wordpress-attributes', [ListingPlatformController::class, 'updateWordPressAttributes'])
+    ->name('listing-platforms.wordpress-attributes.update');
+
+    Route::post(
+    '/listing-platforms/{listingPlatform}/attribute-groups/{attributeGroup}/sync-wordpress',
+    [ListingPlatformController::class, 'syncWordPressAttributeGroup']
+)->name('listing-platforms.attribute-groups.sync-wordpress');
 });
 
 require __DIR__.'/auth.php';
