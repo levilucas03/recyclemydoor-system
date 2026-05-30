@@ -10,6 +10,10 @@ class Category extends Model
         'name',
         'slug',
         'parent_id',
+        'wordpress_term_id',
+        'wordpress_slug',
+        'wordpress_taxonomy',
+        'wordpress_attribute_id',
     ];
 
     // parent

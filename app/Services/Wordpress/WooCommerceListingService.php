@@ -5,6 +5,7 @@ namespace App\Services\WordPress;
 use App\Models\Attribute;
 use App\Models\AttributeGroup;
 use App\Models\ListingPlatform;
+use App\Models\Category;
 
 use App\Models\ListingPlatformLink;
 use Automattic\WooCommerce\Client;
@@ -169,5 +170,42 @@ class WooCommerceListingService
                 'wordpress_attribute_id' => $wooAttribute->id,
             ]);
         }
+    }
+
+    public function syncCategoryToWordPress(
+    ListingPlatform $platform,
+    Category $category
+    ): void {
+        $config = $platform->config;
+
+        $client = new Client(
+            $config['site_url'],
+            $config['consumer_key'],
+            $config['consumer_secret'],
+            [
+                'version' => 'wc/v3',
+            ]
+        );
+
+        $existing = collect($client->get('products/categories', [
+            'search' => $category->name,
+            'per_page' => 100,
+        ]));
+
+        $term = $existing->first(function ($item) use ($category) {
+            return strtolower($item->name) === strtolower($category->name);
+        });
+
+        if (! $term) {
+            $term = $client->post('products/categories', [
+                'name' => $category->name,
+                'slug' => $category->slug,
+            ]);
+        }
+
+        $category->update([
+            'wordpress_term_id' => $term->id,
+            'wordpress_slug' => $term->slug,
+        ]);
     }
 }

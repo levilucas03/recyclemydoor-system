@@ -9,6 +9,7 @@ use App\Services\WordPress\WooCommerceService;
 use App\Services\WordPress\WooCommerceListingService;
 use App\Models\AttributeGroup;
 use App\Models\Attribute;
+use App\Models\Category;
 
 
 
@@ -29,6 +30,7 @@ class ListingPlatformController extends Controller
             'attributeGroups' => AttributeGroup::with('attributes')
                 ->orderBy('name')
                 ->get(),
+            'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
@@ -99,6 +101,25 @@ class ListingPlatformController extends Controller
         return back()->with('success', 'WordPress attribute mappings updated.');
     }
 
+    public function updateWordPressCategories(Request $request, ListingPlatform $platform)
+    {
+        $data = $request->validate([
+            'categories' => ['required', 'array'],
+            'categories.*.id' => ['required', 'exists:categories,id'],
+            'categories.*.wordpress_term_id' => ['nullable'],
+            'categories.*.wordpress_slug' => ['nullable', 'string'],
+        ]);
+
+        foreach ($data['categories'] as $categoryData) {
+            Category::where('id', $categoryData['id'])->update([
+                'wordpress_term_id' => $categoryData['wordpress_term_id'] ?: null,
+                'wordpress_slug' => $categoryData['wordpress_slug'] ?: null,
+            ]);
+        }
+
+        return back()->with('success', 'Category mappings saved.');
+    }
+
     public function syncWordPressAttributeGroup(
         ListingPlatform $listingPlatform,
         AttributeGroup $attributeGroup,
@@ -108,4 +129,17 @@ class ListingPlatformController extends Controller
 
         return back()->with('success', 'Attribute group synced to WordPress.');
     }
+
+   public function syncCategories(ListingPlatform $listingPlatform)
+{
+    Category::query()
+        ->orderBy('name')
+        ->get()
+        ->each(function ($category) use ($listingPlatform) {
+            app(WooCommerceListingService::class)
+                ->syncCategoryToWordPress($listingPlatform, $category);
+        });
+
+    return back()->with('success', 'Categories synced to WordPress.');
+}
 }

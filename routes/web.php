@@ -137,10 +137,27 @@ Route::middleware('auth')->group(function () {
     Route::put('/listing-platforms/{listingPlatform}/wordpress-attributes', [ListingPlatformController::class, 'updateWordPressAttributes'])
     ->name('listing-platforms.wordpress-attributes.update');
 
-    Route::post(
-    '/listing-platforms/{listingPlatform}/attribute-groups/{attributeGroup}/sync-wordpress',
-    [ListingPlatformController::class, 'syncWordPressAttributeGroup']
-)->name('listing-platforms.attribute-groups.sync-wordpress');
+    Route::put('/listing-platforms/{listingPlatform}/wordpress-attributes', [
+    ListingPlatformController::class,
+    'updateWordPressAttributes'
+])->name('listing-platforms.wordpress-attributes.update');
+
+Route::post('/listing-platforms/{listingPlatform}/attribute-groups/{attributeGroup}/sync-wordpress', [
+    ListingPlatformController::class,
+    'syncWordPressAttributeGroup'
+])->name('listing-platforms.attribute-groups.sync-wordpress');
+
+Route::post('/listing-platforms/{listingPlatform}/sync-categories', [
+    ListingPlatformController::class,
+    'syncCategories'
+])->name('listing-platforms.sync-categories');
+
+Route::put('/listing-platforms/{listingPlatform}/wordpress-categories', [
+    ListingPlatformController::class,
+    'updateWordPressCategories'
+])->name('listing-platforms.wordpress-categories.update');
+
+
 });
 
 require __DIR__.'/auth.php';

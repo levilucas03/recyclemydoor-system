@@ -6,6 +6,7 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 const props = defineProps({
     platform: Object,
     attributeGroups: Array,
+    categories: Array,
 
 })
 
@@ -56,6 +57,32 @@ const syncSelectedGroup = () => {
             listingPlatform: props.platform.id,
             attributeGroup: selectedGroupId.value,
         }),
+        {},
+        { preserveScroll: true }
+    )
+}
+
+const categoryMappingForm = useForm({
+    categories: props.categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        wordpress_term_id: category.wordpress_term_id,
+        wordpress_slug: category.wordpress_slug,
+    })),
+})
+
+const saveCategoryWordPressMappings = () => {
+    categoryMappingForm.put(
+        route('listing-platforms.wordpress-categories.update', props.platform.id),
+        {
+            preserveScroll: true,
+        }
+    )
+}
+
+const syncCategories = () => {
+    router.post(
+        route('listing-platforms.sync-categories', props.platform.id),
         {},
         { preserveScroll: true }
     )
@@ -133,6 +160,14 @@ const syncSelectedGroup = () => {
                 class="bg-green-600 text-white px-4 py-2 rounded"
             >
                 Sync Selected Group to WordPress
+            </button>
+
+            <button
+                type="button"
+                @click="syncCategories"
+                class="bg-purple-600 text-white px-4 py-2 rounded"
+            >
+                Sync Categories to WordPress
             </button>
         </form>
 
@@ -222,6 +257,60 @@ const syncSelectedGroup = () => {
                     Save WordPress Mappings
                 </button>
             </div>
+
+            <div class="mt-8 border-t pt-6">
+    <h3 class="text-lg font-semibold mb-4">WordPress Category Mapping</h3>
+
+    <div v-if="categoryMappingForm.categories.length" class="overflow-x-auto">
+        <table class="w-full text-sm border">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-2 text-left">Category</th>
+                    <th class="p-2 text-left">WP Term ID</th>
+                    <th class="p-2 text-left">WP Slug</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr
+                    v-for="category in categoryMappingForm.categories"
+                    :key="category.id"
+                    class="border-t"
+                >
+                    <td class="p-2 font-medium">
+                        {{ category.name }}
+                    </td>
+
+                    <td class="p-2">
+                        <input
+                            v-model="category.wordpress_term_id"
+                            class="w-full border rounded p-2"
+                            placeholder="23"
+                        />
+                    </td>
+
+                    <td class="p-2">
+                        <input
+                            v-model="category.wordpress_slug"
+                            class="w-full border rounded p-2"
+                            placeholder="doors"
+                        />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button
+        type="button"
+        @click="saveCategoryWordPressMappings"
+        class="mt-4 bg-purple-600 text-white px-4 py-2 rounded"
+        :disabled="categoryMappingForm.processing"
+    >
+        Save Category Mappings
+    </button>
+</div>
+
         </div>
     </AuthenticatedLayout>
 </template>
