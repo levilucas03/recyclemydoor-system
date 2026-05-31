@@ -90,9 +90,9 @@ class WooCommerceListingService
             ->toArray();
 
         $dimensions = [
-            'length' => (string) ($product->depth ?? ''),
-            'width'  => (string) ($product->width ?? ''),
-            'height' => (string) ($product->height ?? ''),
+            'length' => (string) ($product->depth / 10 ?? ''),
+            'width'  => (string) ($product->width / 10 ?? ''),
+            'height' => (string) ($product->height / 10 ?? ''),
         ];
 
         $payload = [
