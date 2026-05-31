@@ -5,13 +5,14 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 const props = defineProps({
     products: Array,
     platforms: Array,
+    selectedProductId: Number,
 })
 
 const form = useForm({
     title: '',
     notes: '',
-    product_id: null,
-    platform_ids: [],
+    platform_id: [],
+    product_id: props.selectedProductId ?? null,
 })
 
 const submit = () => {
@@ -44,7 +45,11 @@ const submit = () => {
                 <label class="block text-sm font-medium mb-1">Product</label>
                 <select v-model="form.product_id" class="w-full border rounded p-2">
                     <option :value="null">Select product</option>
-                    <option v-for="product in products" :key="product.id" :value="product.id">
+                    <option
+                        v-for="product in products"
+                        :key="product.id"
+                        :value="product.id"
+                    >
                         {{ product.sku }} - {{ product.title }}
                     </option>
                 </select>

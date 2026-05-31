@@ -23,6 +23,7 @@
                     <th class="p-2 text-left">Category</th>
                     <th class="p-2 text-left">Status</th>
                     <th></th>
+                    <th></th>
                 </tr>
                 </thead>
 
@@ -47,6 +48,36 @@
                     <td class="p-2">{{ product.width }} x {{ product.height }}</td>
                     <td class="p-2">{{ product.categories?.[0]?.name }}</td>
                     <td class="p-2">{{ product.status }}</td>
+                    <td>
+                        <div class="mt-2 flex items-center gap-2">
+                            <Link
+                                v-if="hasWooCommerceId(product)"
+                                :href="route('listings.edit', product.listing.id)"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                title="Published to WooCommerce"
+                            >
+                                W
+                            </Link>
+
+                            <Link
+                                v-else-if="product.listing"
+                                :href="route('listings.edit', product.listing.id)"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                title="Listing created but not pushed"
+                            >
+                                W
+                            </Link>
+
+                            <Link
+                                v-else
+                                :href="route('listings.create', { product_id: product.id })"
+                                class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                title="Create listing for this product"
+                            >
+                                Not listed
+                            </Link>
+                        </div>
+                    </td>
 
                     <td class="p-2">
                         <Link :href="route('products.edit', product.id)" class="text-blue-600">
@@ -127,6 +158,10 @@ import ImagePreview from '@/components/ImagePreview.vue'
 
 const previewImage = ref<string | null>(null)
 const showPreview = ref(false)
+
+const hasWooCommerceId = (product) => {
+    return product.listing?.platform_links?.some(link => link.external_id)
+}
 
 const openPreview = (src: string) => {
     previewImage.value = src

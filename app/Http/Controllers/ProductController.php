@@ -26,7 +26,9 @@ class ProductController extends Controller
         ->where('user_id', $user->id)
         ->with([
             'categories.parent',
-            'primaryImage'
+            'primaryImage',
+            'listing',
+            'listing.platformLinks',
         ])
 
         // Search

@@ -111,6 +111,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/listings', [ListingController::class, 'store'])->name('listings.store');
     Route::post('/listings/bulk-delete', [ListingController::class, 'bulkDelete'])->name('listings.bulk-delete');
     Route::get('/listings/{listing}/edit', [ListingController::class, 'edit'])->name('listings.edit');
+    Route::put('/listings/{listing}', [ListingController::class, 'update'])
+    ->name('listings.update');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

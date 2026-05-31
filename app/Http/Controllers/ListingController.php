@@ -24,8 +24,11 @@ class ListingController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+
+        $selectedProductId = $request->integer('product_id');
+
         $products = Product::with(['primaryImage'])
             ->whereNull('listing_id')
             ->where('user_id', auth()->id())
@@ -38,6 +41,7 @@ class ListingController extends Controller
         return Inertia::render('listing/Create', [
             'products' => $products,
             'platforms' => $platforms,
+            'selectedProductId' => $selectedProductId,
         ]);
     }
 
