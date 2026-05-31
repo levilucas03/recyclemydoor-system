@@ -43,6 +43,7 @@ class WooCommerceListingService
 
         if ($product->primaryImage) {
             $imageUrl = url('/storage/' . $product->primaryImage->path);
+            $imageUrl = null;
 
             if (str_contains($imageUrl, 'localhost') || str_contains($imageUrl, '127.0.0.1')) {
                 $imageUrl = null;
