@@ -12,6 +12,7 @@ class ProductImage extends Model
         'is_primary',
         'sort_order',
         'alt_text',
+        'file_hash',
         'wordpress_image_id',
     ];
 

@@ -10,20 +10,31 @@ use Intervention\Image\Format;
 
 class ImageOptimizerService
 {
-    public function storeProductImage(UploadedFile $file): string
+    public function storeProductImage(
+        UploadedFile $file,
+        string $title = 'product'
+    ): string
     {
         $manager = ImageManager::usingDriver(Driver::class);
 
-        $image = $manager->decodePath($file->getRealPath());
+        $image = $manager->decodePath(
+            $file->getRealPath()
+        );
 
         $image->scaleDown(width: 1600);
 
         $encoded = $image->encodeUsingFormat(
-            Format::WEBP,
+            Format::JPEG,
             quality: 80
         );
 
-        $path = 'products/' . uniqid('product_', true) . '.webp';
+        $filename = str($title)
+            ->slug()
+            ->append('-')
+            ->append(uniqid())
+            ->append('.jpg');
+
+        $path = 'products/' . $filename;
 
         Storage::disk('public')->put(
             $path,

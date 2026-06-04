@@ -306,14 +306,33 @@ class ProductController extends Controller
             ]);
         }
 
-        if ($request->hasFile('images')) {
+       if ($request->hasFile('images')) {
+
             $currentMaxOrder = $product->images()->max('sort_order') ?? 0;
 
             foreach ($request->file('images') as $image) {
-                $path = app(ImageOptimizerService::class)->storeProductImage($image);
+
+                // Optional duplicate detection
+                $hash = md5_file($image->getRealPath());
+
+                $exists = $product->images()
+                    ->where('file_hash', $hash)
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+
+                $path = app(ImageOptimizerService::class)
+                    ->storeProductImage(
+                        $image,
+                        $product->title
+                    );
 
                 $product->images()->create([
                     'path' => $path,
+                    'file_hash' => $hash,
+                    'alt_text' => $product->title,
                     'sort_order' => ++$currentMaxOrder,
                     'is_primary' => ! $product->images()->exists(),
                 ]);
