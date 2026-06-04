@@ -65,7 +65,39 @@ const republish = (linkId) => {
                         {{ product.sku }} - {{ product.title }}
                     </option>
                 </select>
-            </div>
+
+                <div
+                    v-if="currentProduct"
+                    class="mt-3 rounded-lg border bg-gray-50 p-4 flex items-center justify-between gap-4"
+                >
+                    <div class="flex items-center gap-3 min-w-0">
+                        <img
+                            v-if="currentProduct.primary_image"
+                            :src="`/storage/${currentProduct.primary_image.path}`"
+                            class="w-14 h-14 object-cover rounded"
+                        />
+
+                        <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
+
+                        <div class="min-w-0">
+                            <p class="font-medium truncate">
+                                {{ currentProduct.sku }} - {{ currentProduct.title }}
+                            </p>
+
+                            <p class="text-sm text-gray-500">
+                                Click through to update product details, images, prices or attributes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <Link
+                        :href="route('products.edit', currentProduct.id)"
+                        class="shrink-0 rounded bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black"
+                    >
+                        Edit Product
+                    </Link>
+                </div>
+                            </div>
 
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-3">Platforms</label>
