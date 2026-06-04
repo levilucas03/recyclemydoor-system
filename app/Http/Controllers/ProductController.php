@@ -15,6 +15,7 @@ use Inertia\Inertia;
 use App\Enums\ProductStatus;
 use Illuminate\Validation\Rule;
 use App\Models\ProductImage;
+use App\Services\ImageOptimizerService;
 
 class ProductController extends Controller
 {
@@ -291,7 +292,8 @@ class ProductController extends Controller
             }
 
             // store new image
-            $path = $request->file('image')->store('products', 'public');
+            $path = app(ImageOptimizerService::class)
+                ->storeProductImage($request->file('image'));
 
             // save to DB
             $product->images()->create([
