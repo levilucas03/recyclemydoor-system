@@ -15,6 +15,7 @@ class WooCommerceListingService
 {
     public function publish(ListingPlatformLink $link): void
     {
+
         $link->load([
             'listing.products.primaryImage',
             'listing.products.categories',
@@ -96,7 +97,7 @@ class WooCommerceListingService
         ];
 
         $payload = [
-            'name' => $product->title,
+            'name' => $link->listing->title ?? $product->title,
             'type' => 'simple',
             'status' => $config['default_status'] ?? 'draft',
             'regular_price' => (string) ($websitePrice ?? 0),
