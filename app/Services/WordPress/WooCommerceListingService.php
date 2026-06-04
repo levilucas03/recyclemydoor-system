@@ -41,23 +41,30 @@ class WooCommerceListingService
             throw new \Exception('No product attached to this listing.');
         }
 
-        $payload['images'] = $product->images
+        $images = $product->images
             ->sortBy('sort_order')
             ->values()
             ->map(function ($image, $index) {
-
                 if ($image->wordpress_image_id) {
                     return [
-                        'id' => $image->wordpress_image_id,
+                        'id' => (int) $image->wordpress_image_id,
                         'position' => $index,
                     ];
                 }
 
+                $url = url('/storage/' . $image->path);
+
+                if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
+                    return null;
+                }
+
                 return [
-                    'src' => url('/storage/' . $image->path),
+                    'src' => $url,
                     'position' => $index,
                 ];
             })
+            ->filter()
+            ->values()
             ->all();
 
         $websitePrice = $product->prices()
@@ -116,7 +123,7 @@ class WooCommerceListingService
         ];
         
 
-        if (!empty($images)) {
+       if (!empty($images)) {
             $payload['images'] = $images;
         }
 
