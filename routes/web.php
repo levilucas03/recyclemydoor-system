@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ListingController;
@@ -158,6 +159,12 @@ Route::put('/listing-platforms/{listingPlatform}/wordpress-categories', [
     ListingPlatformController::class,
     'updateWordPressCategories'
 ])->name('listing-platforms.wordpress-categories.update');
+
+Route::post('/products/{product}/images/reorder', [ProductImageController::class, 'reorder'])
+    ->name('products.images.reorder');
+
+Route::delete('/products/images/{image}', [ProductImageController::class, 'destroy'])
+    ->name('products.images.destroy');
 
 
 });

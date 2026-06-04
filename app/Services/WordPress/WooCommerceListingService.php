@@ -18,6 +18,7 @@ class WooCommerceListingService
 
         $link->load([
             'listing.products.primaryImage',
+            'listing.products.images',
             'listing.products.categories',
             'platform',
         ]);
@@ -40,21 +41,22 @@ class WooCommerceListingService
             throw new \Exception('No product attached to this listing.');
         }
 
-        $imageUrl = null;
+        $images = $product->images
+            ->sortBy('sort_order')
+            ->map(function ($image) {
+                $url = url('/storage/' . $image->path);
 
-        if ($product->primaryImage) {
-            $imageUrl = url('/storage/' . $product->primaryImage->path);
+                if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
+                    return null;
+                }
 
-            if (str_contains($imageUrl, 'localhost') || str_contains($imageUrl, '127.0.0.1')) {
-                $imageUrl = null;
-            }
-        }
-
-        if ($imageUrl) {
-            $payload['images'] = [
-                ['src' => $imageUrl],
-            ];
-        }
+                return [
+                    'src' => $url,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
 
         $websitePrice = $product->prices()
             ->where('type', 'website')
@@ -111,12 +113,9 @@ class WooCommerceListingService
             'dimensions' => $dimensions,
         ];
         
-        // dd($payload);
 
-        if ($imageUrl) {
-            $payload['images'] = [
-                ['src' => $imageUrl],
-            ];
+        if (!empty($images)) {
+            $payload['images'] = $images;
         }
 
         if ($link->external_id) {

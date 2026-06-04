@@ -140,6 +140,7 @@ class ProductController extends Controller
             'categories',
             'purchase.contact',
             'primaryImage',
+            'images',
             'prices',
             'configuration',
             
@@ -217,6 +218,8 @@ class ProductController extends Controller
             'width' => 'required|numeric',
             'height' => 'required|numeric',
             'depth' => 'required|numeric',
+
+            'images.*' => ['nullable', 'image', 'max:10240'],
 
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -302,6 +305,20 @@ class ProductController extends Controller
                 'sort_order' => 0,
             ]);
         }
+
+        if ($request->hasFile('images')) {
+            $currentMaxOrder = $product->images()->max('sort_order') ?? 0;
+
+            foreach ($request->file('images') as $image) {
+                $path = app(ImageOptimizerService::class)->storeProductImage($image);
+
+                $product->images()->create([
+                    'path' => $path,
+                    'sort_order' => ++$currentMaxOrder,
+                    'is_primary' => ! $product->images()->exists(),
+                ]);
+            }
+        }
     }
 
     protected function savePrice(Product $product, $type, $value)
@@ -380,6 +397,8 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with('success', 'Selected products deleted successfully.');
     }
+
+    
 
 //    public function upload(Request $request)
 //    {

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { router, useForm, Link } from '@inertiajs/vue3'
 import { debounce } from 'lodash'
+import draggable from 'vuedraggable'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import GenerateTitle from '@/components/GenerateTitle.vue'
 import EbayHtmlBuilder from '@/components/EbayHtmlBuilder.vue'
@@ -27,6 +28,7 @@ const props = defineProps({
     parts: Array,
     statuses: Array,
     image: null,
+    images: Array,
 })
 
 // ---------------------
@@ -151,7 +153,10 @@ watch(
 
 form._method = 'PUT'
 
-router.post(route('products.update', form.id), form, {
+router.post(route('products.update', form.id), {
+    ...form,
+    _method: 'PUT',
+}, {
     forceFormData: true,
 })
 
@@ -175,6 +180,46 @@ function manualSave() {
         }
     })
 }
+
+// Gallery 
+
+const galleryImages = ref([...(props.product.images ?? [])])
+const orderChanged = ref(false)
+
+const markGalleryChanged = () => {
+    orderChanged.value = true
+}
+
+const saveImageOrder = () => {
+    router.post(route('products.images.reorder', props.product.id), {
+        images: galleryImages.value.map(image => image.id),
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            orderChanged.value = false
+        },
+    })
+}
+
+const deleteImage = (imageId) => {
+    if (!confirm('Delete this image?')) return
+
+    router.delete(route('products.images.destroy', imageId), {
+        preserveScroll: true,
+        onSuccess: () => {
+            galleryImages.value = galleryImages.value.filter(image => image.id !== imageId)
+            orderChanged.value = true
+        },
+    })
+}
+
+watch(
+    () => props.product.images,
+    (newImages) => {
+        galleryImages.value = [...(newImages ?? [])]
+    },
+    { deep: true }
+)
 </script>
 
 <template>
@@ -223,19 +268,22 @@ function manualSave() {
                             Product Image
                         </label>
 
-                        <input
-                            type="file"
-                            @change="e => form.image = e.target.files[0]"
-                            class="w-full border rounded p-2"
-                        />
+                        <div v-if="product.primary_image" class="mb-4">
+                            <img
+                                :src="`/storage/${product.primary_image.path}`"
+                                class="w-32 h-32 object-cover rounded"
+                            />
+                        </div>
                     </div>
 
-                    <div v-if="product.primary_image" class="mb-4">
-                        <img
-                            :src="`/storage/${product.primary_image.path}`"
-                            class="w-32 h-32 object-cover rounded"
-                        />
-                    </div>
+                    
+                 
+
+            
+
+                   
+
+                    
 
                     
                     <label>
@@ -321,6 +369,69 @@ function manualSave() {
                         <option :value="null">Opening</option>
                         <option v-for="o in openings" :key="o.id" :value="o.id">{{ o.name }}</option>
                     </select>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Gallery Images
+                        </label>
+
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            @change="e => form.images = Array.from(e.target.files)"
+                            class="w-full border rounded p-2"
+                        />
+                    </div>
+
+                    <div v-if="galleryImages.length" class="mt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="text-sm text-gray-500">
+                                Drag images to reorder. The first image will be the primary image.
+                            </p>
+
+                            <button
+                                v-if="orderChanged"
+                                type="button"
+                                @click="saveImageOrder"
+                                class="bg-green-600 text-white px-4 py-2 rounded text-sm"
+                            >
+                                Save Image Order
+                            </button>
+                        </div>
+
+                        <draggable
+                            v-model="galleryImages"
+                            item-key="id"
+                            class="grid grid-cols-2 md:grid-cols-4 gap-4"
+                            @change="markGalleryChanged"
+                        >
+                            <template #item="{ element, index }">
+                                <div class="relative border rounded-lg overflow-hidden bg-white shadow-sm">
+                                    <img
+                                        :src="`/storage/${element.path}`"
+                                        class="w-full h-32 object-cover"
+                                    />
+
+                                    <span
+                                        v-if="index === 0"
+                                        class="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded"
+                                    >
+                                        Primary
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        @click="deleteImage(element.id)"
+                                        class="absolute top-2 right-2 bg-white/90 text-red-600 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-red-50"
+                                        title="Delete image"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </template>
+                        </draggable>
+                    </div>
 
                     
 
