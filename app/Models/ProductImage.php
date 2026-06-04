@@ -12,6 +12,7 @@ class ProductImage extends Model
         'is_primary',
         'sort_order',
         'alt_text',
+        'wordpress_image_id',
     ];
 
     public function product()

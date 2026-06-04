@@ -41,21 +41,23 @@ class WooCommerceListingService
             throw new \Exception('No product attached to this listing.');
         }
 
-        $images = $product->images
+        $payload['images'] = $product->images
             ->sortBy('sort_order')
-            ->map(function ($image) {
-                $url = url('/storage/' . $image->path);
+            ->values()
+            ->map(function ($image, $index) {
 
-                if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
-                    return null;
+                if ($image->wordpress_image_id) {
+                    return [
+                        'id' => $image->wordpress_image_id,
+                        'position' => $index,
+                    ];
                 }
 
                 return [
-                    'src' => $url,
+                    'src' => url('/storage/' . $image->path),
+                    'position' => $index,
                 ];
             })
-            ->filter()
-            ->values()
             ->all();
 
         $websitePrice = $product->prices()
@@ -136,6 +138,24 @@ class WooCommerceListingService
             'error' => null,
             'published_at' => now(),
         ]);
+
+        if (!empty($response->images)) {
+            $localImages = $product->images()
+                ->orderBy('sort_order')
+                ->get()
+                ->values();
+
+            foreach ($response->images as $index => $wpImage) {
+
+                $localImage = $localImages->get($index);
+
+                if ($localImage && isset($wpImage->id)) {
+                    $localImage->update([
+                        'wordpress_image_id' => $wpImage->id,
+                    ]);
+                }
+            }
+        }
     }
 
     public function syncAttributeGroupToWordPress(
