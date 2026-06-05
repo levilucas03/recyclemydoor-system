@@ -1,5 +1,6 @@
 <script setup>
 import { useForm, Link, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
@@ -8,6 +9,9 @@ const props = defineProps({
     platforms: Array,
     selected_platform_ids: Array,
 })
+
+const findingLinkId = ref(null)
+
 
 const currentProduct = props.listing.products?.[0] ?? null
 const platformLinks = props.listing.platform_links ?? []
@@ -27,14 +31,24 @@ const submit = () => {
     })
 }
 
-const republish = (linkId) => {
-    router.post(route('listing-platform-links.republish', linkId), {}, {
+const findWordPressProduct = (linkId) => {
+    findingLinkId.value = linkId
+
+    router.post(route('listing-platform-links.find-wordpress-product', linkId), {}, {
         preserveScroll: true,
+        onSuccess: () => {
+            router.reload({
+                only: ['listing'],
+            })
+        },
+        onFinish: () => {
+            findingLinkId.value = null
+        },
     })
 }
 
-const findWordPressProduct = (linkId) => {
-    router.post(route('listing-platform-links.find-wordpress-product', linkId), {}, {
+const republish = (linkId) => {
+    router.post(route('listing-platform-links.republish', linkId), {}, {
         preserveScroll: true,
     })
 }
@@ -122,9 +136,10 @@ const toggleSyncImages = (linkId, value) => {
                     :key="link.id"
                     type="button"
                     @click="findWordPressProduct(link.id)"
-                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+                    :disabled="findingLinkId === link.id"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
                 >
-                    Find {{ link.platform?.name }} Product
+                    {{ findingLinkId === link.id ? 'Finding...' : `Find ${link.platform?.name} Product` }}
                 </button>
 
                 <div v-for="link in platformLinks" :key="link.id" class="mt-3 text-sm">
@@ -194,7 +209,7 @@ const toggleSyncImages = (linkId, value) => {
                         @click="republish(link.id)"
                         class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
                     >
-                        Republish {{ link.platform?.name ?? 'Platform' }}
+                        Push {{ link.platform?.name ?? 'Platform' }}
                     </button>
                 </div>
 
