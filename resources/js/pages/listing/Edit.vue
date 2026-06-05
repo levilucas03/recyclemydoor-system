@@ -75,152 +75,154 @@ const toggleSyncImages = (linkId, value) => {
             </div>
         </template>
 
-        <form @submit.prevent="submit" class="max-w-4xl mx-auto mt-10 bg-white shadow rounded-xl p-6">
+        
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Listing Title</label>
-                <input v-model="form.title" class="w-full border rounded p-2" />
-                <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">
-                    {{ form.errors.title }}
-                </div>
-            </div>
+        <form @submit.prevent="submit" class="">
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Notes</label>
-                <textarea v-model="form.notes" class="w-full border rounded p-2" rows="4"></textarea>
-            </div>
+            <div class="max-w-7xl mx-auto mt-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-1">Product</label>
-                <select v-model="form.product_id" class="w-full border rounded p-2">
-                    <option :value="null">Select product</option>
-                    <option v-for="product in products" :key="product.id" :value="product.id">
-                        {{ product.sku }} - {{ product.title }}
-                    </option>
-                </select>
+                <div class="lg:col-span-3">
 
-                <div
-                    v-if="currentProduct"
-                    class="mt-3 rounded-lg border bg-gray-50 p-4 flex items-center justify-between gap-4"
-                >
-                    <div class="flex items-center gap-3 min-w-0">
-                        <img
-                            v-if="currentProduct.primary_image"
-                            :src="`/storage/${currentProduct.primary_image.path}`"
-                            class="w-14 h-14 object-cover rounded"
-                        />
+                    <!-- Listing Details -->
+                    <div class="space-y-6  bg-white shadow rounded-xl p-5 bg-white">
+                        <h3 class="text-lg font-semibold">Listing Details</h3>
 
-                        <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Listing Title</label>
+                            <input v-model="form.title" class="w-full border rounded p-2" />
+                            <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.title }}
+                            </div>
+                        </div>
 
-                        <div class="min-w-0">
-                            <p class="font-medium truncate">
-                                {{ currentProduct.sku }} - {{ currentProduct.title }}
-                            </p>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium mb-1">Product</label>
+                            <select v-model="form.product_id" class="w-full border rounded p-2">
+                                <option :value="null">Select product</option>
+                                <option v-for="product in products" :key="product.id" :value="product.id">
+                                    {{ product.sku }} - {{ product.title }}
+                                </option>
+                            </select>
 
-                            <p class="text-sm text-gray-500">
-                                Click through to update product details, images, prices or attributes.
-                            </p>
+                            <div
+                                v-if="currentProduct"
+                                class="mt-3 rounded-lg border bg-gray-50 p-4 flex items-center justify-between gap-4"
+                            >
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <img
+                                        v-if="currentProduct.primary_image"
+                                        :src="`/storage/${currentProduct.primary_image.path}`"
+                                        class="w-14 h-14 object-cover rounded"
+                                    />
+
+                                    <div v-else class="w-14 h-14 bg-gray-200 rounded"></div>
+
+                                    <div class="min-w-0">
+                                        <p class="font-medium truncate">
+                                            {{ currentProduct.sku }} - {{ currentProduct.title }}
+                                        </p>
+
+                                        <p class="text-sm text-gray-500">
+                                            Click through to update product details, images, prices or attributes.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <Link
+                                    :href="route('products.edit', currentProduct.id)"
+                                    class="shrink-0 rounded bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black"
+                                >
+                                    Edit Product
+                                </Link>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Notes</label>
+                            <textarea v-model="form.notes" class="w-full border rounded p-2" rows="4"></textarea>
+                        </div>
+
+                        <div class="mt-8 flex gap-3 items-center border-t pt-6">
+                            <button
+                                class="bg-blue-600 text-white px-4 py-2 rounded"
+                                :disabled="form.processing"
+                            >
+                                Save Listing
+                            </button>
+
+                            <Link :href="route('listings.index')" class="px-4 py-2 rounded border">
+                                Cancel
+                            </Link>
                         </div>
                     </div>
-
-                    <Link
-                        :href="route('products.edit', currentProduct.id)"
-                        class="shrink-0 rounded bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black"
-                    >
-                        Edit Product
-                    </Link>
                 </div>
+                <aside class="lg:col-span-1 space-y-4">
 
-                <button
-                    v-for="link in platformLinks"
-                    :key="link.id"
-                    type="button"
-                    @click="findWordPressProduct(link.id)"
-                    :disabled="findingLinkId === link.id"
-                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
-                >
-                    {{ findingLinkId === link.id ? 'Finding...' : `Find ${link.platform?.name} Product` }}
-                </button>
+                    <!-- Platform Settings -->
+                    <div class="bg-white shadow rounded-xl p-5">
+                        <h3 class="text-lg font-semibold mb-4">Platforms</h3>
 
-                <div v-for="link in platformLinks" :key="link.id" class="mt-3 text-sm">
-                    <span v-if="link.external_id" class="text-green-600">
-                        Linked WordPress ID: {{ link.external_id }}
-                    </span>
+                        <div
+                            v-for="link in platformLinks"
+                            :key="link.id"
+                            class="rounded-xl border bg-white p-5 mb-4"
+                        >
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold">
+                                        {{ link.platform?.name }}
+                                    </h4>
 
-                    <span v-else class="text-gray-500">
-                        Not linked yet
-                    </span>
-                </div>
+                                    <p class="text-sm text-gray-500">
+                                        {{ link.external_id ? `Linked ID: ${link.external_id}` : 'Not linked yet' }}
+                                    </p>
+                                </div>
 
-                <div v-if="platformLinks.length" class="space-y-3">
-                    <div
-                        v-for="link in platformLinks"
-                        :key="link.id"
-                        class="border rounded-lg p-4"
-                    >
-                        <label class="flex items-center gap-2 text-sm">
-                            <input
-                                type="checkbox"
-                                :checked="link?.sync_images ?? true"
-                                @change="toggleSyncImages(link.id, $event.target.checked)"
-                            />
-                            Sync photos
-                        </label>
-                    </div>
-                </div>
+                                <span
+                                    class="rounded-full px-3 py-1 text-xs font-semibold"
+                                    :class="link.external_id
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-gray-100 text-gray-500'"
+                                >
+                                    {{ link.external_id ? 'Live / Linked' : 'Draft / Not linked' }}
+                                </span>
+                            </div>
 
-            </div>
+                            <!-- WordPress Options -->
+                            <div v-if="link.platform?.slug === 'wordpress'" class="space-y-4">
 
-            
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input
+                                        type="checkbox"
+                                        :checked="link?.sync_images ?? true"
+                                        @change="toggleSyncImages(link.id, $event.target.checked)"
+                                    />
+                                    Sync photos
+                                </label>
 
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-3">Platforms</label>
+                                <div class="flex gap-3">
+                                    <button
+                                        type="button"
+                                        @click="findWordPressProduct(link.id)"
+                                        :disabled="findingLinkId === link.id"
+                                        class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
+                                    >
+                                        {{ findingLinkId === link.id ? 'Finding...' : 'Find' }}
+                                    </button>
 
-                <div v-if="platforms.length" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label
-                        v-for="platform in platforms"
-                        :key="platform.id"
-                        class="border rounded-lg p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-50"
-                    >
-                        <input
-                            type="checkbox"
-                            :value="platform.id"
-                            v-model="form.platform_ids"
-                        />
-
-                        <div>
-                            <div class="font-medium">{{ platform.name }}</div>
-                            <div class="text-xs text-gray-500">{{ platform.slug }}</div>
+                                    <button
+                                        type="button"
+                                        @click="republish(link.id)"
+                                        class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                                    >
+                                        Push 
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                </div>
-
-                <p v-else class="text-sm text-gray-500">
-                    No active listing platforms. Configure WordPress first.
-                </p>
-            </div>
-
-            <div class="flex gap-3 items-center">
-                <div v-if="platformLinks.length" class="flex gap-3">
-                    <button
-                        v-for="link in platformLinks"
-                        :key="link.id"
-                        type="button"
-                        @click="republish(link.id)"
-                        class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                    >
-                        Push {{ link.platform?.name ?? 'Platform' }}
-                    </button>
-                </div>
-
-                <button class="bg-blue-600 text-white px-4 py-2 rounded" :disabled="form.processing">
-                    Save Listing
-                </button>
-
-                <Link :href="route('listings.index')" class="px-4 py-2 rounded border">
-                    Cancel
-                </Link>
-            </div>
+                    </div>
+                </aside>
+            </div> 
 
         </form>
     </AuthenticatedLayout>
