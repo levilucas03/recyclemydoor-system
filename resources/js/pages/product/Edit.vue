@@ -248,6 +248,22 @@ watch(
                         View Purchase
                     </Link>
 
+                    <Link
+                        v-if="product.listing"
+                        :href="route('listings.edit', product.listing.id)"
+                        class="text-purple-600 hover:underline"
+                    >
+                        View Listing
+                    </Link>
+
+                    <Link
+                        v-else
+                        :href="route('listings.create', { product_id: product.id })"
+                        class="text-gray-500 hover:text-purple-600"
+                    >
+                        Create Listing
+                    </Link>
+
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Status

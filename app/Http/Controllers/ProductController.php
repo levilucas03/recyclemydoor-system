@@ -143,6 +143,7 @@ class ProductController extends Controller
             'images',
             'prices',
             'configuration',
+            'listing',
             
         ]); 
 
