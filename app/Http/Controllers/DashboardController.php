@@ -180,6 +180,35 @@ class DashboardController extends Controller
 
             'percentageChange' => $salePercentageChange,
         ];
+
+        $startDate = request('start_date')
+    ? Carbon::parse(request('start_date'))->startOfDay()
+    : now()->subDays(31)->startOfDay();
+
+$endDate = request('end_date')
+    ? Carbon::parse(request('end_date'))->endOfDay()
+    : now()->endOfDay();
+
+        // gross calculations 
+
+        $soldProducts = Product::where('status', 'sold')
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->with('prices')
+            ->get();
+
+        $salesRevenue = $soldProducts->sum(fn ($product) =>
+            (float) optional($product->prices->firstWhere('type', 'sold'))->price
+        );
+
+        $purchaseCost = $soldProducts->sum(fn ($product) =>
+            (float) optional($product->prices->firstWhere('type', 'purchase'))->price
+        );
+
+        $grossProfit = $salesRevenue - $purchaseCost;
+
+        $margin = $salesRevenue > 0
+            ? round(($grossProfit / $salesRevenue) * 100, 1)
+            : 0;
         
 
 
@@ -215,7 +244,16 @@ class DashboardController extends Controller
                 'weekly_coverage' => round($weeklyCoverage, 1),
                 'monthly_coverage' => round($monthlyCoverage, 1),
             ],
-            'salesStats' => $salesStats
+            'salesStats' => $salesStats,
+            'profitStats' => [
+                'sales_revenue' => $salesRevenue,
+                'purchase_cost' => $purchaseCost,
+                'gross_profit' => $grossProfit,
+                'margin' => $margin,
+                'product_count' => $soldProducts->count(),
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+            ],
             
         ]);
     }

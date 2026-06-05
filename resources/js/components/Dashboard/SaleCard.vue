@@ -17,6 +17,7 @@ const formatCurrency = (value) => {
 
 
 <template>
+
     <div class="bg-white rounded-xl p-6 shadow mb-4">
 
         <h3 class="text-lg font-semibold mb-4">Sales</h3>
