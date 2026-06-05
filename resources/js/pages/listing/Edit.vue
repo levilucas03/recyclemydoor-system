@@ -20,7 +20,11 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.put(route('listings.update', props.listing.id))
+    form.put(route('listings.update', props.listing.id), {
+        onSuccess: () => {
+            router.visit(route('listings.edit', props.listing.id))
+        },
+    })
 }
 
 const republish = (linkId) => {
@@ -28,6 +32,21 @@ const republish = (linkId) => {
         preserveScroll: true,
     })
 }
+
+const findWordPressProduct = (linkId) => {
+    router.post(route('listing-platform-links.find-wordpress-product', linkId), {}, {
+        preserveScroll: true,
+    })
+}
+
+const toggleSyncImages = (linkId, value) => {
+    router.put(route('listing-platform-links.sync-images', linkId), {
+        sync_images: value,
+    }, {
+        preserveScroll: true,
+    })
+}
+
 </script>
 
 <template>
@@ -97,7 +116,47 @@ const republish = (linkId) => {
                         Edit Product
                     </Link>
                 </div>
-                            </div>
+
+                <button
+                    v-for="link in platformLinks"
+                    :key="link.id"
+                    type="button"
+                    @click="findWordPressProduct(link.id)"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+                >
+                    Find {{ link.platform?.name }} Product
+                </button>
+
+                <div v-for="link in platformLinks" :key="link.id" class="mt-3 text-sm">
+                    <span v-if="link.external_id" class="text-green-600">
+                        Linked WordPress ID: {{ link.external_id }}
+                    </span>
+
+                    <span v-else class="text-gray-500">
+                        Not linked yet
+                    </span>
+                </div>
+
+                <div v-if="platformLinks.length" class="space-y-3">
+                    <div
+                        v-for="link in platformLinks"
+                        :key="link.id"
+                        class="border rounded-lg p-4"
+                    >
+                        <label class="flex items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                :checked="link?.sync_images ?? true"
+                                @change="toggleSyncImages(link.id, $event.target.checked)"
+                            />
+                            Sync photos
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            
 
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-3">Platforms</label>

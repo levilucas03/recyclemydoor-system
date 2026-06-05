@@ -166,6 +166,12 @@ Route::post('/products/{product}/images/reorder', [ProductImageController::class
 Route::delete('/products/images/{image}', [ProductImageController::class, 'destroy'])
     ->name('products.images.destroy');
 
+    Route::post('/listing-platform-links/{link}/find-wordpress-product', [ListingPlatformController::class, 'findWordPressProduct'])
+    ->name('listing-platform-links.find-wordpress-product');
+
+    Route::put('/listing-platform-links/{link}/sync-images', [ListingPlatformController::class, 'updateSyncImages'])
+    ->name('listing-platform-links.sync-images');
+
 
 });
 

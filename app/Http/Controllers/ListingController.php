@@ -79,7 +79,8 @@ class ListingController extends Controller
             ]);
         }
 
-        return redirect()->route('listings.index')->with('success', 'Listing created.');
+        return redirect()->route('listings.edit', $listing)
+            ->with('success', 'Listing created.');
     }
 
     public function edit(Listing $listing)

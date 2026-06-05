@@ -11,6 +11,7 @@ class ListingPlatformLink extends Model
         'listing_platform_id',
         'external_id',
         'status',
+        'sync_images',
         'payload',
         'error',
         'published_at',

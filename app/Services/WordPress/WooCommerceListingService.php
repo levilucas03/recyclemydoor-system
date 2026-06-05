@@ -25,6 +25,7 @@ class WooCommerceListingService
 
         $platform = $link->platform;
         $config = $platform->config;
+        $images = [];
 
         $client = new Client(
             $config['site_url'],
@@ -41,31 +42,37 @@ class WooCommerceListingService
             throw new \Exception('No product attached to this listing.');
         }
 
-        $images = $product->images
-            ->sortBy('sort_order')
-            ->values()
-            ->map(function ($image, $index) {
-                if ($image->wordpress_image_id) {
+        if ($link->sync_images) {
+
+            $images = $product->images
+                ->sortBy('sort_order')
+                ->values()
+                ->map(function ($image, $index) {
+                    if ($image->wordpress_image_id) {
+                        return [
+                            'id' => (int) $image->wordpress_image_id,
+                            'position' => $index,
+                        ];
+                    }
+
+                    $url = url('/storage/' . $image->path);
+
+                    if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
+                        return null;
+                    }
+
                     return [
-                        'id' => (int) $image->wordpress_image_id,
+                        'src' => $url,
                         'position' => $index,
                     ];
-                }
+                })
+                ->filter()
+                ->values()
+                ->all();        
+    
+        }           
 
-                $url = url('/storage/' . $image->path);
-
-                if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
-                    return null;
-                }
-
-                return [
-                    'src' => $url,
-                    'position' => $index,
-                ];
-            })
-            ->filter()
-            ->values()
-            ->all();
+       
 
         $websitePrice = $product->prices()
             ->where('type', 'website')
