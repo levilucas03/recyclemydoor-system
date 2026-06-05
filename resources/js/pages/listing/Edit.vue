@@ -162,6 +162,31 @@ const toggleSyncImages = (linkId, value) => {
                     <div class="bg-white shadow rounded-xl p-5">
                         <h3 class="text-lg font-semibold mb-4">Platforms</h3>
 
+                        <div class="mb-5 space-y-3">
+                            <label
+                                v-for="platform in platforms"
+                                :key="platform.id"
+                                class="border rounded-lg p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-50"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :value="platform.id"
+                                    v-model="form.platform_ids"
+                                />
+
+                                <div>
+                                    <div class="font-medium">{{ platform.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ platform.slug }}</div>
+                                </div>
+                            </label>
+
+                            <p v-if="!platforms.length" class="text-sm text-gray-500">
+                                No active listing platforms. Configure WordPress first.
+                            </p>
+                        </div>
+
+                        <div class="border-t pt-4"></div>
+
                         <div
                             v-for="link in platformLinks"
                             :key="link.id"
