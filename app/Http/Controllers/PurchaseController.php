@@ -26,12 +26,42 @@ class PurchaseController extends Controller
     {
         $purchases = Purchase::with([
                 'contact',
-                'source'
+                'source',
+                'products.prices',
             ])
             ->withCount('products')
             ->orderBy('purchase_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
+
+        $purchases->getCollection()->transform(function ($purchase) {
+
+            $soldRevenue = $purchase->products->sum(function ($product) {
+                return (float) optional(
+                    $product->prices->firstWhere('type', 'sold')
+                )->price;
+            });
+
+            $purchaseTotal = (float) $purchase->total_amount;
+
+            $profit = $soldRevenue - $purchaseTotal;
+
+            $roi = $purchaseTotal > 0
+                ? round(($soldRevenue / $purchaseTotal) * 100, 1)
+                : 0;
+
+            $purchase->sold_revenue = $soldRevenue;
+            $purchase->profit = $profit;
+            $purchase->roi = $roi;
+
+            $soldCount = $purchase->products->filter(function ($product) {
+                return $product->prices->firstWhere('type', 'sold');
+            })->count();
+
+            $purchase->sold_count = $soldCount;
+
+            return $purchase;
+        });
 
         return Inertia::render('purchase/Index', [
             'purchases' => $purchases,

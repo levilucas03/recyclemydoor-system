@@ -54,6 +54,9 @@
                     <th class="p-2 text-left">Status</th>
                     <th class="p-2 text-left">Source</th>
                     <th class="p-2 text-left">Price</th>
+                    <th class="p-2 text-left">Sold For</th>
+                    <th class="p-2 text-left">Profit</th>
+                    <th class="p-2 text-left">Return</th>
                     <th class="p-2 text-left"></th>
                     <th class="p-2 text-left"></th>
                 </tr>
@@ -78,7 +81,10 @@
                         </td>
 
                         <td class="p-2">
-                            {{ purchase.products_count }}
+                            {{ purchase.products_count }} /
+                            <span class="text-xs text-green-600">
+                                ({{ purchase.sold_count }} sold)
+                            </span>
                         </td>
 
                         <td class="p-2">
@@ -99,6 +105,20 @@
 
                         <td class="p-2">
                             {{ purchase.total_amount }}
+                        </td>
+
+                        <td class="p-2">
+                            {{ formatCurrency(purchase.sold_revenue) }}
+                        </td>
+
+                        <td class="p-2">
+                            <span :class="purchase.profit >= 0 ? 'text-green-600' : 'text-red-600'">
+                                {{ formatCurrency(purchase.profit) }}
+                            </span>
+                        </td>
+
+                        <td class="p-2">
+                            {{ purchase.roi }}%
                         </td>
 
                         <td class="p-2">
@@ -187,6 +207,14 @@ import axios from 'axios'
 
 
 const bulkStatus = ref('')
+
+// helper to format currency
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+    }).format(value ?? 0);
+};
 
 
 function sendToXero(id) {
