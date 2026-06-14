@@ -29,7 +29,7 @@ const props = defineProps({
     statuses: Array,
     image: null,
     images: Array,
-    parts: Array,
+    allocateParts: Array,
 })
 
 // ---------------------
@@ -604,7 +604,7 @@ watch(
                 <option value="">Select part</option>
 
                 <option
-                    v-for="part in parts"
+                    v-for="part in allocateParts"
                     :key="part.id"
                     :value="part.id"
                     :disabled="part.available_quantity <= 0"

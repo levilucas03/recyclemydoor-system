@@ -210,7 +210,7 @@ class ProductController extends Controller
             'categories' => $categories,
             'statuses' => $statuses,
             'trafficDoors' => $trafficDoors,
-            'parts' => Part::with('allocations')
+            'allocateParts' => Part::with('allocations')
                 ->orderBy('name')
                 ->get()
                 ->map(fn ($part) => [

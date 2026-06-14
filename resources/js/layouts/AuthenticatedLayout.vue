@@ -70,6 +70,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Fuel Logs
                                 </NavLink>
+                                <NavLink
+                                    :href="route('parts.index')"
+                                    :active="route().current('parts.index')"
+                                >
+                                    Parts
+                                </NavLink>
                             </div>
                         </div>
 
