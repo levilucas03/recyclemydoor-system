@@ -41,10 +41,24 @@ const formatCurrency = (value) => {
             <span class="font-semibold">{{ formatCurrency(profitStats.sales_revenue) }}</span>
         </div>
 
-        <div class="flex justify-between">
-            <span class="text-gray-500">Purchase Cost</span>
-            <span class="font-semibold text-red-600">
+       <div class="flex justify-between">
+            <span>Purchase Cost</span>
+            <span class="text-red-600">
                 - {{ formatCurrency(profitStats.purchase_cost) }}
+            </span>
+        </div>
+
+        <div class="flex justify-between">
+            <span>Parts / Refurb Cost</span>
+            <span class="text-red-600">
+                - {{ formatCurrency(profitStats.parts_cost) }}
+            </span>
+        </div>
+
+        <div class="flex justify-between font-semibold">
+            <span>Total Cost</span>
+            <span class="text-red-600">
+                - {{ formatCurrency(profitStats.total_cost) }}
             </span>
         </div>
 
