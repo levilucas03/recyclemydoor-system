@@ -191,24 +191,36 @@ $endDate = request('end_date')
 
         // gross calculations 
 
-        $soldProducts = Product::where('status', 'sold')
-            ->whereBetween('updated_at', [$startDate, $endDate])
-            ->with('prices')
-            ->get();
+       $saleItems = SaleItem::query()
+    ->where('type', 'product')
+    ->whereHas('sale', function ($q) use ($startDate, $endDate) {
+        $q->whereBetween('invoice_date', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled');
+    })
+    ->with([
+        'sale',
+        'product.prices',
+        'product.partAllocations',
+    ])
+    ->get();
 
-        $salesRevenue = $soldProducts->sum(fn ($product) =>
-            (float) optional($product->prices->firstWhere('type', 'sold'))->price
-        );
+$salesRevenue = $saleItems->sum('total');
 
-        $purchaseCost = $soldProducts->sum(fn ($product) =>
-            (float) optional($product->prices->firstWhere('type', 'purchase'))->price
-        );
+$purchaseCost = $saleItems->sum(function ($item) {
+    return (float) optional($item->product?->prices?->firstWhere('type', 'purchase'))->price;
+});
 
-        $grossProfit = $salesRevenue - $purchaseCost;
+$partsCost = $saleItems->sum(function ($item) {
+    return $item->product?->partAllocations?->sum('cost_allocated') ?? 0;
+});
 
-        $margin = $salesRevenue > 0
-            ? round(($grossProfit / $salesRevenue) * 100, 1)
-            : 0;
+$totalCost = $purchaseCost + $partsCost;
+
+$grossProfit = $salesRevenue - $totalCost;
+
+$margin = $salesRevenue > 0
+    ? round(($grossProfit / $salesRevenue) * 100, 1)
+    : 0;
         
 
 
@@ -248,9 +260,11 @@ $endDate = request('end_date')
             'profitStats' => [
                 'sales_revenue' => $salesRevenue,
                 'purchase_cost' => $purchaseCost,
+                'parts_cost' => $partsCost,
+                'total_cost' => $totalCost,
                 'gross_profit' => $grossProfit,
                 'margin' => $margin,
-                'product_count' => $soldProducts->count(),
+                'product_count' => $saleItems->sum('qty'),
                 'start_date' => $startDate->toDateString(),
                 'end_date' => $endDate->toDateString(),
             ],

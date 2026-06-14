@@ -4,6 +4,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\PartController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingPublishController;
 use App\Http\Controllers\ListingPlatformController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
+use App\Http\Controllers\ProductPartAllocationController;
+
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -114,6 +117,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/listings/{listing}/edit', [ListingController::class, 'edit'])->name('listings.edit');
     Route::put('/listings/{listing}', [ListingController::class, 'update'])
     ->name('listings.update');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::resource('parts', PartController::class);
+    });
+
+
+    Route::post('/products/{product}/parts', [ProductPartAllocationController::class, 'store'])
+        ->name('products.parts.store');
+
+    Route::delete('/products/{product}/parts/{allocation}', [ProductPartAllocationController::class, 'destroy'])
+        ->name('products.parts.destroy');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

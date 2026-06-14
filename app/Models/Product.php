@@ -148,4 +148,14 @@ class Product extends Model
             $query->where('products.id', $this->id);
         })->first();
     }
+
+    public function partAllocations()
+    {
+        return $this->hasMany(ProductPartAllocation::class);
+    }
+
+    public function getRefurbCostAttribute()
+    {
+        return $this->partAllocations->sum('cost_allocated');
+    }
 }

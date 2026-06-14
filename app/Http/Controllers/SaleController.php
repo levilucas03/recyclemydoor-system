@@ -336,7 +336,7 @@ class SaleController extends Controller
                         ProductPrice::query()
                             ->where('product_id', $product->id)
                             ->where('type', 'sold')
-                            ->where('price', $oldItem->price)
+                            // ->where('price', $oldItem->price)
                             ->delete();
                     }
                 }

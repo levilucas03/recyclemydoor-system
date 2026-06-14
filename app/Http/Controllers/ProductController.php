@@ -7,6 +7,7 @@ use App\Models\AttributeGroup;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Category;
+use App\Models\Part;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -144,6 +145,7 @@ class ProductController extends Controller
             'prices',
             'configuration',
             'listing',
+            'partAllocations.part',
             
         ]); 
 
@@ -208,6 +210,17 @@ class ProductController extends Controller
             'categories' => $categories,
             'statuses' => $statuses,
             'trafficDoors' => $trafficDoors,
+            'parts' => Part::with('allocations')
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($part) => [
+                    'id' => $part->id,
+                    'name' => $part->name,
+                    'sku' => $part->sku,
+                    'unit_cost' => $part->unit_cost,
+                    'total_quantity' => $part->total_quantity,
+                    'available_quantity' => $part->total_quantity - $part->allocations->sum('quantity_used'),
+            ]),
         ]);
     }
 

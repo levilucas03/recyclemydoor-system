@@ -29,6 +29,7 @@ const props = defineProps({
     statuses: Array,
     image: null,
     images: Array,
+    parts: Array,
 })
 
 // ---------------------
@@ -65,6 +66,45 @@ const form = useForm({
         ?.filter(attr => attr.group?.slug === 'parts')
         .map(attr => attr.id) || [],
 })
+
+const partForm = useForm({
+    part_id: '',
+    quantity_used: 1,
+})
+
+const submitPart = () => {
+    partForm.post(route('products.parts.store', props.product.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            partForm.reset()
+            partForm.quantity_used = 1
+        },
+    })
+}
+
+const removePart = (allocationId) => {
+    if (confirm('Remove this part from product?')) {
+        router.delete(route('products.parts.destroy', [
+            props.product.id,
+            allocationId,
+        ]), {
+            preserveScroll: true,
+        })
+    }
+}
+
+const refurbTotal = computed(() => {
+    return props.product.part_allocations?.reduce((total, item) => {
+        return total + Number(item.cost_allocated ?? 0)
+    }, 0) ?? 0
+})
+
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+    }).format(value ?? 0)
+}
 
 
 
@@ -538,6 +578,131 @@ watch(
                     {{ form.errors.part_ids }}
                 </div>
             </div>
+
+            <div class="bg-white rounded-xl shadow p-6 mt-6">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-lg font-semibold">Refurb Parts</h3>
+            <p class="text-sm text-gray-500">
+                Assign parts used to refurb this product.
+            </p>
+        </div>
+
+        <div class="text-right">
+            <div class="text-sm text-gray-500">Total Refurb Cost</div>
+            <div class="text-xl font-bold">
+                {{ formatCurrency(refurbTotal) }}
+            </div>
+        </div>
+    </div>
+
+    <form @submit.prevent="submitPart" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+            <label class="block text-sm font-medium mb-1">Part</label>
+
+            <select v-model="partForm.part_id" class="w-full border rounded p-2">
+                <option value="">Select part</option>
+
+                <option
+                    v-for="part in parts"
+                    :key="part.id"
+                    :value="part.id"
+                    :disabled="part.available_quantity <= 0"
+                >
+                    {{ part.name }}
+                    -
+                    {{ formatCurrency(part.unit_cost) }}
+                    each
+                    -
+                    {{ part.available_quantity }} available
+                </option>
+            </select>
+
+            <div v-if="partForm.errors.part_id" class="text-red-600 text-sm">
+                {{ partForm.errors.part_id }}
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Quantity Used</label>
+
+            <input
+                v-model="partForm.quantity_used"
+                type="number"
+                min="1"
+                class="w-full border rounded p-2"
+            />
+
+            <div v-if="partForm.errors.quantity_used" class="text-red-600 text-sm">
+                {{ partForm.errors.quantity_used }}
+            </div>
+        </div>
+
+        <div class="flex items-end">
+            <button
+                type="submit"
+                class="w-full bg-black text-white rounded px-4 py-2"
+                :disabled="partForm.processing"
+            >
+                Add Part Cost
+            </button>
+        </div>
+    </form>
+
+    <div class="border rounded overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-100 text-left">
+                <tr>
+                    <th class="p-3">Part</th>
+                    <th class="p-3">Qty Used</th>
+                    <th class="p-3">Unit Cost</th>
+                    <th class="p-3">Total</th>
+                    <th class="p-3 text-right">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr
+                    v-for="allocation in product.part_allocations"
+                    :key="allocation.id"
+                    class="border-t"
+                >
+                    <td class="p-3 font-medium">
+                        {{ allocation.part?.name }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ allocation.quantity_used }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ formatCurrency(allocation.unit_cost) }}
+                    </td>
+
+                    <td class="p-3 font-semibold">
+                        {{ formatCurrency(allocation.cost_allocated) }}
+                    </td>
+
+                    <td class="p-3 text-right">
+                        <button
+                            type="button"
+                            @click="removePart(allocation.id)"
+                            class="text-red-600"
+                        >
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+
+                <tr v-if="!product.part_allocations?.length">
+                    <td colspan="5" class="p-4 text-center text-gray-500">
+                        No refurb parts added yet.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
             
 
             <!-- SAVE -->
