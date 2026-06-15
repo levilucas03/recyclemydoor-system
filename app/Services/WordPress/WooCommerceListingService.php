@@ -153,6 +153,11 @@ class WooCommerceListingService
             'published_at' => now(),
         ]);
 
+
+        $product->update([
+            'status' => 'listed'
+        ]);
+
         if (!empty($response->images)) {
             $localImages = $product->images()
                 ->orderBy('sort_order')

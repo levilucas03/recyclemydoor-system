@@ -187,8 +187,10 @@ class ListingPlatformController extends Controller
             return back()->with('error', 'No matching WordPress product found.');
         }
 
+        $product->update([
+            'status' => 'listed'
+        ]);
 
-        // dd($wooProduct);
 
         // update listing to the name used on the listing. 
         if (!empty($wooProduct->name)) {

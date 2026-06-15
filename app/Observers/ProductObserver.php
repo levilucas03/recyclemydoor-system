@@ -22,17 +22,17 @@ class ProductObserver
     public function updated(Product $product): void
     {
 
-    
+        if (! $product->wasChanged('status')) {
+            return;
+        }
 
-       
+        $status = $product->status instanceof \BackedEnum
+            ? $product->status->value
+            : $product->status;
 
-        // if (! $product->wasChanged('status')) {
-        //     return;
-        // }
-
-        // if ($product->status !== 'sold') {
-        //     return;
-        // }
+        if ($status !== 'sold') {
+            return;
+        }
 
         $product->load('listing.platformLinks.platform');
 
