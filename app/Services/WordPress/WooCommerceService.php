@@ -38,6 +38,15 @@ class WooCommerceService
         $this->publish($link);
     }
 
+    public function markProductSold(int $wordpressProductId): void
+    {
+        $this->client->put("products/{$wordpressProductId}", [
+            'stock_status' => 'outofstock',
+            'manage_stock' => true,
+            'stock_quantity' => 0,
+        ]);
+    }
+
 
     public function test(): bool
     {

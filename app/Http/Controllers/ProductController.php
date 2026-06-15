@@ -193,6 +193,10 @@ class ProductController extends Controller
             'label' => $s->label(),
         ]);
 
+        // $product->load('listing.platformLinks.platform');
+
+        // dd($product);
+
 
         // dd($product->getPrice('purchase'));
         

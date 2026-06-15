@@ -17,4 +17,9 @@ class ListingPlatform extends Model
         'is_active' => 'boolean',
         'config' => 'array',
     ];
+
+    public function platform()
+    {
+        return $this->belongsTo(ListingPlatform::class, 'listing_platform_id');
+    }
 }
