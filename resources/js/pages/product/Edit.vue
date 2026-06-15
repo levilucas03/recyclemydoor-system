@@ -299,7 +299,7 @@ watch(
                     <Link
                         v-else
                         :href="route('listings.create', { product_id: product.id })"
-                        class="inline-flex mr-2 items-center rounded-lg bg-grey-600 px-4 py-2 text-sm font-semibold text-white hover:bg-grey-700"
+                        class="inline-flex mr-2 items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700"
                     >
                         Create Listing
                     </Link>
