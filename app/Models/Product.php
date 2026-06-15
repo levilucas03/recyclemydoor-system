@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\ProductStatus;
+use App\Models\Sale;
+use App\Models\SaleItem;
 
 class Product extends Model
 {
@@ -157,5 +159,22 @@ class Product extends Model
     public function getRefurbCostAttribute()
     {
         return $this->partAllocations->sum('cost_allocated');
+    }
+
+    public function saleItem()
+    {
+        return $this->hasOne(SaleItem::class);
+    }
+
+    public function sale()
+    {
+        return $this->hasOneThrough(
+            Sale::class,
+            SaleItem::class,
+            'product_id',
+            'id',
+            'id',
+            'sale_id'
+        );
     }
 }

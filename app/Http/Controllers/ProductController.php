@@ -146,6 +146,7 @@ class ProductController extends Controller
             'configuration',
             'listing',
             'partAllocations.part',
+            'sale',
             
         ]); 
 

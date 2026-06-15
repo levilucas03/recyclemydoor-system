@@ -283,7 +283,7 @@ watch(
                     <Link
                         v-if="product.purchase"
                         :href="route('purchases.edit', product.purchase.id)"
-                        class="text-indigo-600 hover:underline"
+                        class="inline-flex mr-2 items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-700"
                     >
                         View Purchase
                     </Link>
@@ -291,7 +291,7 @@ watch(
                     <Link
                         v-if="product.listing"
                         :href="route('listings.edit', product.listing.id)"
-                        class="text-purple-600 hover:underline"
+                        class="inline-flex mr-2 items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
                     >
                         View Listing
                     </Link>
@@ -299,12 +299,20 @@ watch(
                     <Link
                         v-else
                         :href="route('listings.create', { product_id: product.id })"
-                        class="text-gray-500 hover:text-purple-600"
+                        class="inline-flex mr-2 items-center rounded-lg bg-grey-600 px-4 py-2 text-sm font-semibold text-white hover:bg-grey-700"
                     >
                         Create Listing
                     </Link>
 
-                    <div class="mb-4">
+                    <Link
+                        v-if="product.sale"
+                        :href="route('sales.edit', product.sale.id)"
+                        class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                    >
+                        View Sale
+                    </Link>
+
+                    <div class="mb-4 mt-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
