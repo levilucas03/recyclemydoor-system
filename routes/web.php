@@ -8,6 +8,7 @@ use App\Http\Controllers\PartController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ListingPublishController;
 use App\Http\Controllers\ListingPlatformController;
+use App\Http\Controllers\EbayAuthController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
@@ -185,6 +186,12 @@ Route::delete('/products/images/{image}', [ProductImageController::class, 'destr
 
     Route::put('/listing-platform-links/{link}/sync-images', [ListingPlatformController::class, 'updateSyncImages'])
     ->name('listing-platform-links.sync-images');
+
+    Route::get('/ebay/auth/redirect', [EbayAuthController::class, 'redirect'])
+        ->name('ebay.auth.redirect');
+
+    Route::get('/ebay/auth/callback', [EbayAuthController::class, 'callback'])
+        ->name('ebay.auth.callback');
 
 
 });

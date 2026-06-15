@@ -99,4 +99,9 @@ class Sale extends Model
         // NO PRODUCTS
         return (string) $this->id;
     }
+    
+    public function ebayOrder()
+    {
+        return $this->hasOne(EbayOrder::class);
+    }
 }

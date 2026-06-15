@@ -177,4 +177,9 @@ class Product extends Model
             'sale_id'
         );
     }
+
+    public function ebayOrderItems()
+    {
+        return $this->hasMany(EbayOrderItem::class);
+    }
 }
