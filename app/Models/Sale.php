@@ -43,7 +43,6 @@ class Sale extends Model
 
         'delivery_method',
 
-        'account_code',
 
         'internal_note',
         'customer_note',

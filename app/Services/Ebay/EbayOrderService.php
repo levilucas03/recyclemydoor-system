@@ -6,13 +6,17 @@ use App\Models\EbayAccount;
 use App\Models\EbayOrder;
 use App\Models\EbayOrderItem;
 use App\Models\Product;
+use App\Services\Ebay\EbayAuthService;
+
 use Illuminate\Support\Facades\Http;
 
 class EbayOrderService
 {
     public function sync(EbayAccount $account): void
     {
-        $response = Http::withToken($account->access_token)
+        $token = app(EbayAuthService::class)->getAccessToken($account);
+
+        $response = Http::withToken($token)
             ->get('https://api.ebay.com/sell/fulfillment/v1/order', [
                 'limit' => 50,
             ]);

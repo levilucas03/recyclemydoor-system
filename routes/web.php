@@ -13,6 +13,8 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
+use App\Http\Controllers\EbaySyncController;
+
 use App\Http\Controllers\ProductPartAllocationController;
 
 
@@ -192,6 +194,11 @@ Route::delete('/products/images/{image}', [ProductImageController::class, 'destr
 
     Route::get('/ebay/auth/callback', [EbayAuthController::class, 'callback'])
         ->name('ebay.auth.callback');
+
+
+Route::post('/ebay/sync-sales', [EbaySyncController::class, 'syncSales'])
+    ->middleware('auth')
+    ->name('ebay.sync-sales');
 
 
 });

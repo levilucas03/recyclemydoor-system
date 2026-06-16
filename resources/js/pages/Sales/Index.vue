@@ -22,6 +22,12 @@ function sendToXero(id) {
     })
 }
 
+const syncEbaySales = () => {
+    router.post(route('ebay.sync-sales'), {}, {
+        preserveScroll: true,
+    })
+}
+
 // Auto search with debounce
 watch(search, debounce((value) => {
 
@@ -93,6 +99,14 @@ function goToSale(sale) {
                                 </button>
                             </div>
                         </div>
+
+                        <button
+                            type="button"
+                            @click="syncEbaySales"
+                            class="inline-flex items-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                        >
+                            Sync eBay Sales
+                        </button>
 
                         <!-- Desktop -->
                         <div class="hidden md:block">
