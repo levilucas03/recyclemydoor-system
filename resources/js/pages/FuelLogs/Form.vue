@@ -9,7 +9,9 @@ const props = defineProps({
 
 const form = useForm({
     vehicle_id: props.fuelLog?.vehicle_id ?? '',
-    date: props.fuelLog?.date ?? new Date().toISOString().split('T')[0],
+    date: props.fuelLog?.date
+        ? props.fuelLog.date.split('T')[0]
+        : new Date().toISOString().split('T')[0],
     mileage: props.fuelLog?.mileage ?? '',
     litres: props.fuelLog?.litres ?? '',
     cost: props.fuelLog?.cost ?? '',
@@ -33,7 +35,7 @@ const submit = () => {
         </template>
 
             <form @submit.prevent="submit" class="max-w-4xl mx-auto py-8 space-y-6">
-                
+
 
                 <div class="bg-white p-6 rounded shadow">
 
