@@ -47,7 +47,7 @@ const intro = ref(
 )
 
 const delivery = ref(
-    'Delivery may be available depending on location. Please message first to confirm delivery pricing.'
+    'Delivery covers most areas of the UK, if your over 3 hours from our location the price will be different.'
 )
 
 const footer = ref(
