@@ -5,7 +5,8 @@ import PurchaseCard from '@/Components/Dashboard/PurchaseCard.vue';
 import SaleCard from '@/Components/Dashboard/SaleCard.vue';
 import ProfitCard from '@/Components/Dashboard/ProfitCard.vue';
 import { Head } from '@inertiajs/vue3';
-import DeliveryCoverageCard from '@/Components/Dashboard/DeliveryCoverageCard.vue'
+import DeliveryCoverageCard from '@/Components/Dashboard/DeliveryCoverageCard.vue';
+import VehicleMileageCard from '@/Components/Dashboard/VehicleMileageCard.vue';
 
 defineProps({
     purchaseStats: Object,
@@ -13,6 +14,10 @@ defineProps({
     delivery: Object,
     salesStats: Object,
     profitStats: Object,
+    vehicleMileageStats: {
+        type: Array,
+        default: () => []
+    }
 });
 
 // helper to format currency
@@ -49,6 +54,10 @@ const percentageChange = (current, previous) => {
             <DeliveryCoverageCard :delivery="delivery" />
             <SaleCard :salesStats="salesStats" />
             <ProfitCard :profitStats="profitStats" />
+            <VehicleMileageCard
+                :vehicle-mileage-stats="vehicleMileageStats"
+            />
+            
 
 
             

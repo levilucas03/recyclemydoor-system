@@ -182,46 +182,127 @@ class DashboardController extends Controller
         ];
 
         $startDate = request('start_date')
-    ? Carbon::parse(request('start_date'))->startOfDay()
-    : now()->subDays(31)->startOfDay();
+            ? Carbon::parse(request('start_date'))->startOfDay()
+            : now()->subDays(31)->startOfDay();
 
-$endDate = request('end_date')
-    ? Carbon::parse(request('end_date'))->endOfDay()
-    : now()->endOfDay();
+        $endDate = request('end_date')
+            ? Carbon::parse(request('end_date'))->endOfDay()
+            : now()->endOfDay();
 
         // gross calculations 
 
-       $saleItems = SaleItem::query()
-    ->where('type', 'product')
-    ->whereHas('sale', function ($q) use ($startDate, $endDate) {
-        $q->whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled');
-    })
-    ->with([
-        'sale',
-        'product.prices',
-        'product.partAllocations',
-    ])
-    ->get();
+        $saleItems = SaleItem::query()
+            ->where('type', 'product')
+            ->whereHas('sale', function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('invoice_date', [$startDate, $endDate])
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->with([
+                'sale',
+                'product.prices',
+                'product.partAllocations',
+            ])
+        ->get();
 
-$salesRevenue = $saleItems->sum('total');
+        $salesRevenue = $saleItems->sum('total');
 
-$purchaseCost = $saleItems->sum(function ($item) {
-    return (float) optional($item->product?->prices?->firstWhere('type', 'purchase'))->price;
-});
+        $purchaseCost = $saleItems->sum(function ($item) {
+            return (float) optional($item->product?->prices?->firstWhere('type', 'purchase'))->price;
+        });
 
-$partsCost = $saleItems->sum(function ($item) {
-    return $item->product?->partAllocations?->sum('cost_allocated') ?? 0;
-});
+        $partsCost = $saleItems->sum(function ($item) {
+            return $item->product?->partAllocations?->sum('cost_allocated') ?? 0;
+        });
 
-$totalCost = $purchaseCost + $partsCost;
+        $totalCost = $purchaseCost + $partsCost;
 
-$grossProfit = $salesRevenue - $totalCost;
+        $grossProfit = $salesRevenue - $totalCost;
 
-$margin = $salesRevenue > 0
-    ? round(($grossProfit / $salesRevenue) * 100, 1)
-    : 0;
-        
+        $margin = $salesRevenue > 0
+            ? round(($grossProfit / $salesRevenue) * 100, 1)
+            : 0;
+
+
+        $fuelLogsByVehicle = FuelLog::query()
+            ->with('vehicle')
+            ->whereNotNull('vehicle_id')
+            ->whereNotNull('mileage')
+            ->orderBy('vehicle_id')
+            ->orderBy('date')
+            ->get()
+            ->groupBy('vehicle_id');
+
+        $vehicleMileageStats = [];
+
+        foreach ($fuelLogsByVehicle as $vehicleId => $logs) {
+
+            $weeklyMileage = [];
+            $previousLog = null;
+
+            foreach ($logs as $log) {
+
+                if ($previousLog) {
+
+                    $miles = (float) $log->mileage - (float) $previousLog->mileage;
+
+                    // Ignore negative or obviously invalid readings
+                    if ($miles >= 0) {
+
+                        $weekKey = Carbon::parse($log->date)
+                            ->startOfWeek()
+                            ->format('Y-m-d');
+
+                        $weeklyMileage[$weekKey] =
+                            ($weeklyMileage[$weekKey] ?? 0) + $miles;
+                    }
+                }
+
+                $previousLog = $log;
+            }
+
+            $thisWeekKey = now()
+                ->copy()
+                ->startOfWeek()
+                ->format('Y-m-d');
+
+            $lastWeekKey = now()
+                ->copy()
+                ->subWeek()
+                ->startOfWeek()
+                ->format('Y-m-d');
+
+            $last12Weeks = collect($weeklyMileage)
+                ->sortKeys()
+                ->take(-12);
+
+            $vehicle = $logs->first()->vehicle;
+
+            $vehicleMileageStats[] = [
+                'vehicle_id' => $vehicleId,
+
+                'vehicle' => $vehicle?->name ?? 'Vehicle',
+
+                'registration' => $vehicle?->registration ?? null,
+
+                'this_week' => round($weeklyMileage[$thisWeekKey] ?? 0),
+
+                'last_week' => round($weeklyMileage[$lastWeekKey] ?? 0),
+
+                'average_week' => $last12Weeks->count()
+                    ? round($last12Weeks->avg())
+                    : 0,
+
+                'last_12_weeks' => round($last12Weeks->sum()),
+
+                'weekly' => $last12Weeks
+                    ->map(fn ($miles, $week) => [
+                        'week' => $week,
+                        'miles' => round($miles),
+                    ])
+                    ->values(),
+            ];
+        }
+                
 
 
         return inertia('Dashboard', [
@@ -268,6 +349,8 @@ $margin = $salesRevenue > 0
                 'start_date' => $startDate->toDateString(),
                 'end_date' => $endDate->toDateString(),
             ],
+
+            'vehicleMileageStats' => $vehicleMileageStats,
             
         ]);
     }
