@@ -145,8 +145,15 @@ function goToSale(sale) {
                                         
 
                                         <!-- Ref -->
-                                        <td class="p-2 font-medium">
+                                       <td class="p-2 font-medium">
                                             #{{ sale.id }}
+
+                                            <span
+                                                v-if="sale.is_private"
+                                                class="ml-2 px-2 py-1 text-xs rounded bg-purple-100 text-purple-700"
+                                            >
+                                                Private
+                                            </span>
                                         </td>
 
                                          <!-- Date -->

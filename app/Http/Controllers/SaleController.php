@@ -108,6 +108,7 @@ class SaleController extends Controller
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
             'reference' => ['nullable', 'string', 'max:255'],
+            'is_private' => 'nullable|boolean',
         ]);
 
 
@@ -148,6 +149,7 @@ class SaleController extends Controller
                 'deliver_town_city' => $request['town_city'] ?? null,
                 'deliver_postcode' => $request['postcode'] ?? null,
                 'source_id' => $request->source_id,
+                'is_private' => $request->boolean('is_private'),
             ]);
 
             $total = 0;
@@ -265,6 +267,7 @@ class SaleController extends Controller
             'items' => 'required|array|min:1',
             'items.*.title' => 'required|string',
             'reference' => ['nullable', 'string', 'max:255'],
+            'is_private' => 'nullable|boolean',
         ]);
 
         DB::transaction(function () use ($request, $sale) {
@@ -310,6 +313,7 @@ class SaleController extends Controller
                 'deliver_address_2' => $request->address_2,
                 'deliver_town_city' => $request->town_city,
                 'deliver_postcode' => $request->postcode,
+                'is_private' => $request->boolean('is_private'),
             ]);
 
             // dd($sale->items);

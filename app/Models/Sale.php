@@ -10,6 +10,7 @@ class Sale extends Model
 
     protected $casts = [
         'status' => SaleStatus::class,
+        'is_private' => 'boolean',
     ];
 
     protected $fillable = [
@@ -48,6 +49,7 @@ class Sale extends Model
         'customer_note',
 
         'reference',
+        'is_private',
     ];
 
     public function items()

@@ -22,6 +22,7 @@ const form = useForm({
         mobile: '',
         type: 'general_public',
     },
+    is_private: props.sale?.is_private,
 
     contact_id: props.sale?.contact_id,
 
@@ -220,6 +221,23 @@ function submit() {
 
     <div class="max-w-6xl mx-auto py-8 space-y-6">
 
+         <div class="bg-white p-6 rounded shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold">Private Sale</h3>
+                        <p class="text-sm text-gray-500">
+                            Mark this sale as a private sale for separate reporting.
+                        </p>
+                    </div>
+
+                    <input
+                        v-model="form.is_private"
+                        type="checkbox"
+                        class="h-5 w-5"
+                    />
+                </div>
+            </div>
+
         <!-- DATE / STATUS -->
         <div class="bg-white p-6 rounded shadow space-y-4">
 
@@ -258,6 +276,7 @@ function submit() {
                     {{ source.name }}
                 </option>
             </select>
+
 
         </div>
 
