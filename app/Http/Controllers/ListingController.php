@@ -88,6 +88,7 @@ class ListingController extends Controller
         abort_unless($listing->user_id === auth()->id(), 403);
 
         $listing->load([
+            'products.prices',
             'products.primaryImage',
             'platformLinks.platform',
         ]);
@@ -124,6 +125,10 @@ class ListingController extends Controller
             'product_id' => 'nullable|exists:products,id',
             'platform_ids' => 'nullable|array',
             'platform_ids.*' => 'exists:listing_platforms,id',
+
+            'initial_price' => 'required|numeric|min:0',
+            'website_price' => 'required|numeric|min:0',
+            'ebay_price' => 'required|numeric|min:0',
         ]);
 
         $listing->update([
@@ -156,6 +161,35 @@ class ListingController extends Controller
                 'status' => 'draft',
             ]);
         }
+
+        $product = Product::findOrFail($request->product_id);
+
+        $product->prices()->updateOrCreate(
+            [
+                'type' => 'initial',
+            ],
+            [
+                'price' => $request->initial_price,
+            ]
+        );
+
+        $product->prices()->updateOrCreate(
+            [
+                'type' => 'website',
+            ],
+            [
+                'price' => $request->website_price,
+            ]
+        );
+
+        $product->prices()->updateOrCreate(
+            [
+                'type' => 'ebay',
+            ],
+            [
+                'price' => $request->ebay_price,
+            ]
+        );
 
         return redirect()
             ->route('listings.edit', $listing)

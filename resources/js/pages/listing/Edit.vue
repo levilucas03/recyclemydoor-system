@@ -10,6 +10,14 @@ const props = defineProps({
     selected_platform_ids: Array,
 })
 
+const getPrice = (product, type) => {
+    if (!product?.prices) return 0
+
+    const price = product.prices.find(price => price.type === type)
+
+    return price ? Number(price.price) : 0
+}
+
 const findingLinkId = ref(null)
 
 
@@ -21,7 +29,21 @@ const form = useForm({
     notes: props.listing.notes ?? '',
     product_id: currentProduct?.id ?? null,
     platform_ids: props.selected_platform_ids ?? [],
+
+    initial_price: getPrice(currentProduct, 'initial'),
+    website_price: getPrice(currentProduct, 'website'),
+    ebay_price: getPrice(currentProduct, 'ebay'),
 })
+
+const updatePricesFromInitial = () => {
+    const initial = Number(form.initial_price || 0)
+
+    // Website = initial price
+    form.website_price = initial
+
+    // eBay = initial + 20%
+    form.ebay_price = Math.round((initial * 1.20) * 100) / 100
+}
 
 const submit = () => {
     form.put(route('listings.update', props.listing.id), {
@@ -60,6 +82,8 @@ const toggleSyncImages = (linkId, value) => {
         preserveScroll: true,
     })
 }
+
+
 
 </script>
 
@@ -135,6 +159,127 @@ const toggleSyncImages = (linkId, value) => {
                                     Edit Product
                                 </Link>
                             </div>
+
+                            <!-- PRODUCT PRICING -->
+                            <div
+                                v-if="currentProduct"
+                                class="mt-5 border-t pt-5"
+                            >
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h4 class="font-semibold">Listing Prices</h4>
+                                        <p class="text-sm text-gray-500">
+                                            Set the initial selling price. Website and eBay prices can still be adjusted manually.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                                    <!-- INITIAL PRICE -->
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">
+                                            Initial Price
+                                        </label>
+
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                            >
+                                                £
+                                            </span>
+
+                                            <input
+                                                v-model.number="form.initial_price"
+                                                @input="updatePricesFromInitial"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                class="w-full border rounded p-2 pl-7"
+                                            />
+                                        </div>
+
+                                        <div
+                                            v-if="form.errors.initial_price"
+                                            class="text-red-500 text-sm mt-1"
+                                        >
+                                            {{ form.errors.initial_price }}
+                                        </div>
+                                    </div>
+
+
+                                    <!-- WEBSITE PRICE -->
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">
+                                            Website Price
+                                        </label>
+
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                            >
+                                                £
+                                            </span>
+
+                                            <input
+                                                v-model.number="form.website_price"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                class="w-full border rounded p-2 pl-7"
+                                            />
+                                        </div>
+
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Used when pushed to the website.
+                                        </p>
+
+                                        <div
+                                            v-if="form.errors.website_price"
+                                            class="text-red-500 text-sm mt-1"
+                                        >
+                                            {{ form.errors.website_price }}
+                                        </div>
+                                    </div>
+
+
+                                    <!-- EBAY PRICE -->
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">
+                                            eBay Price
+                                        </label>
+
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                            >
+                                                £
+                                            </span>
+
+                                            <input
+                                                v-model.number="form.ebay_price"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                class="w-full border rounded p-2 pl-7"
+                                            />
+                                        </div>
+
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Initial price + 20% by default.
+                                        </p>
+
+                                        <div
+                                            v-if="form.errors.ebay_price"
+                                            class="text-red-500 text-sm mt-1"
+                                        >
+                                            {{ form.errors.ebay_price }}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
                         </div>
 
                         <div class="mb-4">
