@@ -14,10 +14,13 @@ class ListingController extends Controller
 {
     public function index()
     {
-        $listings = Listing::with(['products.primaryImage', 'platformLinks.platform'])
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+        $listings = Listing::with([
+            'products.primaryImage',
+            'products.prices',
+            'platformLinks.platform',
+        ])
+        ->latest()
+        ->paginate(20);
 
         return Inertia::render('listing/Index', [
             'listings' => $listings,

@@ -22,6 +22,18 @@ function toggleAll() {
     }
 }
 
+function getPrice(listing, type) {
+    const product = listing.products?.[0]
+
+    if (!product?.prices) {
+        return 0
+    }
+
+    const price = product.prices.find(price => price.type === type)
+
+    return Number(price?.price ?? 0)
+}
+
 watch(selected, (val) => {
     if (val.length !== props.listings.data.length) {
         selectAll.value = false
@@ -61,7 +73,8 @@ function bulkDelete() {
             <th class="p-2 text-center"><input type="checkbox" v-model="selectAll" @change="toggleAll" /></th>
             <th class="p-2 text-left">Date</th>
             <th class="p-2 text-left">Title</th>
-            <th class="p-2 text-left">Price</th>
+            <th class="p-2 text-left">Website</th>
+            <th class="p-2 text-left">eBay</th>
             <th class="p-2 text-left">Actions</th>
         </tr>
         </thead>
@@ -76,7 +89,14 @@ function bulkDelete() {
                 </td>
                 <td class="p-2">{{ dayjs(listing.created_at).format('Do MMM YY') }}</td>
                 <td class="p-2">{{ listing.title }}</td>
-                <td class="p-2">&pound;0.00</td>
+               
+                <td class="p-2 font-medium">
+                    £{{ getPrice(listing, 'website').toFixed(2) }}
+                </td>
+
+                <td class="p-2 font-medium">
+                    £{{ getPrice(listing, 'ebay').toFixed(2) }}
+                </td>
                 <td class="p-2">
                     <Link :href="route('listings.edit', listing.id)" class="text-blue-600 hover:underline">Edit</Link>
                     <div v-for="link in listing.platform_links" :key="link.id">
