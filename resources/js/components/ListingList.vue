@@ -87,8 +87,43 @@ function bulkDelete() {
                         v-model="selected"
                     />
                 </td>
+                
                 <td class="p-2">{{ dayjs(listing.created_at).format('Do MMM YY') }}</td>
-                <td class="p-2">{{ listing.title }}</td>
+                <td class="p-2">
+                    <div class="flex items-center gap-3">
+
+                        <!-- PRODUCT IMAGE -->
+                        <img
+                            v-if="listing.products?.[0]?.primary_image"
+                            :src="`/storage/${listing.products[0].primary_image.path}`"
+                            :alt="listing.title"
+                            class="w-16 h-16 object-cover rounded-lg border"
+                        />
+
+                        <!-- NO IMAGE -->
+                        <div
+                            v-else
+                            class="w-16 h-16 bg-gray-100 border rounded-lg flex items-center justify-center text-gray-400 text-xs"
+                        >
+                            No image
+                        </div>
+
+                        <!-- DETAILS -->
+                        <div>
+                            <div class="font-medium">
+                                {{ listing.title }}
+                            </div>
+
+                            <div
+                                v-if="listing.products?.[0]?.sku"
+                                class="text-xs text-gray-500 mt-1"
+                            >
+                                {{ listing.products[0].sku }}
+                            </div>
+                        </div>
+
+                    </div>
+                </td>
                
                 <td class="p-2 font-medium">
                     £{{ getPrice(listing, 'website').toFixed(2) }}
