@@ -241,20 +241,22 @@ class DashboardController extends Controller
 
             foreach ($logs as $log) {
 
-                if ($previousLog) {
+                // First reading is only our starting point
+                if ($previousLog === null) {
+                    $previousLog = $log;
+                    continue;
+                }
 
-                    $miles = (float) $log->mileage - (float) $previousLog->mileage;
+                $miles = (float) $log->mileage - (float) $previousLog->mileage;
 
-                    // Ignore negative or obviously invalid readings
-                    if ($miles >= 0) {
+                if ($miles >= 0 && $miles <= 5000) {
 
-                        $weekKey = Carbon::parse($log->date)
-                            ->startOfWeek()
-                            ->format('Y-m-d');
+                    $weekKey = Carbon::parse($log->date)
+                        ->startOfWeek()
+                        ->format('Y-m-d');
 
-                        $weeklyMileage[$weekKey] =
-                            ($weeklyMileage[$weekKey] ?? 0) + $miles;
-                    }
+                    $weeklyMileage[$weekKey] =
+                        ($weeklyMileage[$weekKey] ?? 0) + $miles;
                 }
 
                 $previousLog = $log;
