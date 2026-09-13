@@ -41,4 +41,8 @@ return [
         'runame' => env('EBAY_RUNAME'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

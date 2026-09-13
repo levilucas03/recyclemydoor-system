@@ -24,6 +24,11 @@ use Inertia\Inertia;
 use Webfox\Xero\OauthCredentialManager;
 
 
+use App\Http\Controllers\TransportController;
+
+
+
+
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
 //         'canLogin' => Route::has('login'),
@@ -59,6 +64,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/contacts/search', [ContactController::class, 'search'])
     ->name('contacts.search');
+
+    Route::get('/transport', [TransportController::class, 'index'])
+    ->name('transport.index');
 
     Route::get('/products/search', function (Illuminate\Http\Request $request) {
         return \App\Models\Product::query()

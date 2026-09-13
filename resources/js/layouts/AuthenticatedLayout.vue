@@ -70,6 +70,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Fuel Logs
                                 </NavLink>
+                                 <NavLink
+                                    :href="route('transport.index')"
+                                    :active="route().current('transport.index')"
+                                >
+                                    Transport
+                                </NavLink>
                                 <NavLink
                                     :href="route('parts.index')"
                                     :active="route().current('parts.index')"
@@ -213,6 +219,13 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('fuel-logs.*')"
                         >
                             Fuel
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            :href="route('transport.index')"
+                            :active="route().current('transport.*')"
+                        >
+                            Transport
                         </ResponsiveNavLink>
 
                        
