@@ -18,11 +18,12 @@ class TransportController extends Controller
                 'contact',
                 'items.product',
             ])
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'awaiting_delivery')
+
 
             // Change this to whatever identifies something
             // still requiring delivery in your system.
-            ->where('delivery_method', 'delivery')
+            // ->where('delivery_method', 'delivery')
 
             ->orderBy('invoice_date')
             ->get()
@@ -39,13 +40,13 @@ class TransportController extends Controller
 
                     'name' => $sale->contact?->name,
 
-                    'postcode' => $sale->delivery_postcode,
+                    'postcode' => $sale->deliver_postcode,
 
                     'address' => collect([
-                        $sale->delivery_address_line_1 ?? null,
-                        $sale->delivery_address_line_2 ?? null,
-                        $sale->delivery_city ?? null,
-                        $sale->delivery_postcode ?? null,
+                        $sale->deliver_address_1 ?? null,
+                        $sale->deliver_address_2 ?? null,
+                        $sale->deliver_town_city ?? null,
+                        $sale->deliver_postcode ?? null,
                     ])->filter()->implode(', '),
 
                     'date' => $sale->invoice_date,
@@ -77,6 +78,9 @@ class TransportController extends Controller
             ])
 
             // We can refine this depending on your Purchase model.
+            ->where('status', 'awaiting_collection')
+            ->orWhere('status', 'on_hold')
+
             ->orderBy('purchase_date')
             ->get()
             ->map(function ($purchase) {
@@ -133,7 +137,7 @@ class TransportController extends Controller
          */
         $jobs = $purchases
             ->concat($sales)
-            ->filter(fn ($job) => !empty($job['postcode']))
+            // ->filter(fn ($job) => !empty($job['postcode'])) take out filter for now
             ->values();
 
 
