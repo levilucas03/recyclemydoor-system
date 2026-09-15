@@ -68,6 +68,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/transport', [TransportController::class, 'index'])
     ->name('transport.index');
 
+    Route::get(
+        '/dashboard/business-performance',
+        [DashboardController::class, 'businessPerformance']
+    )->name('dashboard.business-performance');
+
     Route::get('/products/search', function (Illuminate\Http\Request $request) {
         return \App\Models\Product::query()
             // ->with('prices', 'primaryImage')

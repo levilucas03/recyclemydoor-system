@@ -8,12 +8,15 @@ import { Head } from '@inertiajs/vue3';
 import DeliveryCoverageCard from '@/Components/Dashboard/DeliveryCoverageCard.vue';
 import VehicleMileageCard from '@/Components/Dashboard/VehicleMileageCard.vue';
 
+import BusinessPerformanceCard from '@/Components/Dashboard/BusinessPerformanceCard.vue'
+
 defineProps({
     purchaseStats: Object,
     fuel: Object,
     delivery: Object,
     salesStats: Object,
     profitStats: Object,
+    businessPerformance: Object,
     vehicleMileageStats: {
         type: Array,
         default: () => []
@@ -49,6 +52,10 @@ const percentageChange = (current, previous) => {
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
+            <BusinessPerformanceCard
+                :business-performance="businessPerformance"
+            />
+
             <PurchaseCard :purchaseStats="purchaseStats" />
             <FuelCard :fuel="fuel" />
             <DeliveryCoverageCard :delivery="delivery" />
@@ -58,6 +65,7 @@ const percentageChange = (current, previous) => {
                 :vehicle-mileage-stats="vehicleMileageStats"
             />
             
+                        
 
 
             

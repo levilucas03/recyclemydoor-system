@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Purchase;
 use App\Models\Product;
+use App\Models\Part;
 use App\Models\FuelLog;
 use App\Models\SaleItem;
 use App\Models\Sale;
@@ -304,6 +305,11 @@ class DashboardController extends Controller
                     ->values(),
             ];
         }
+
+        $businessPerformance = $this->getBusinessPerformance(
+                now()->subDays(31),
+                now()
+            );
                 
 
 
@@ -353,7 +359,120 @@ class DashboardController extends Controller
             ],
 
             'vehicleMileageStats' => $vehicleMileageStats,
+
+            'businessPerformance' => $businessPerformance,
             
         ]);
+    }
+
+    public function businessPerformance(Request $request)
+    {
+        $request->validate([
+            'period' => 'nullable|in:today,7,31,90,custom',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
+        ]);
+
+        $period = $request->input('period', '31');
+
+        switch ($period) {
+            case 'today':
+                $from = now()->startOfDay();
+                $to = now()->endOfDay();
+                break;
+
+            case '7':
+                $from = now()->subDays(7);
+                $to = now();
+                break;
+
+            case '90':
+                $from = now()->subDays(90);
+                $to = now();
+                break;
+
+            case 'custom':
+                $from = $request->from;
+                $to = $request->to;
+                break;
+
+            case '31':
+            default:
+                $from = now()->subDays(31);
+                $to = now();
+                break;
+        }
+
+        return response()->json(
+            $this->getBusinessPerformance($from, $to)
+        );
+    }
+
+    private function getBusinessPerformance($from, $to)
+    {
+        // Make sure we include the whole start/end day
+        $from = Carbon::parse($from)->startOfDay();
+        $to = Carbon::parse($to)->endOfDay();
+
+        // -------------------------
+        // INCOME
+        // -------------------------
+
+        $sales = Sale::whereBetween('invoice_date', [$from, $to])
+            ->sum('total_amount');
+
+
+        // -------------------------
+        // OUTGOINGS
+        // -------------------------
+
+        $purchases = Purchase::whereBetween('purchase_date', [$from, $to])
+            ->sum('total_amount');
+
+        $parts = Part::whereBetween('created_at', [$from, $to])
+            ->sum('total_cost');
+
+        $fuel = FuelLog::whereBetween('date', [$from, $to])
+            ->sum('cost');
+
+
+        // -------------------------
+        // TOTALS
+        // -------------------------
+
+        $income = $sales;
+
+        $outgoings =
+            $purchases +
+            $parts +
+            $fuel;
+
+        $profit = $income - $outgoings;
+
+        $margin = $income > 0
+            ? ($profit / $income) * 100
+            : 0;
+
+
+        return [
+            'from' => $from->format('Y-m-d'),
+            'to' => $to->format('Y-m-d'),
+
+            'income' => [
+                'sales' => round($sales, 2),
+                'total' => round($income, 2),
+            ],
+
+            'outgoings' => [
+                'purchases' => round($purchases, 2),
+                'parts' => round($parts, 2),
+                'fuel' => round($fuel, 2),
+                'total' => round($outgoings, 2),
+            ],
+
+            'profit' => round($profit, 2),
+
+            'margin' => round($margin, 1),
+        ];
     }
 }
