@@ -1,5 +1,6 @@
 <?php
 
+use  App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ContactController;
@@ -72,6 +73,10 @@ Route::middleware('auth')->group(function () {
         '/dashboard/business-performance',
         [DashboardController::class, 'businessPerformance']
     )->name('dashboard.business-performance');
+
+
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+    ->name('analytics.index');
 
     Route::get('/products/search', function (Illuminate\Http\Request $request) {
         return \App\Models\Product::query()
