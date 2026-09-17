@@ -226,14 +226,37 @@ const htmlOutput = computed(() => {
         </div>
     </div>
 
-     <div style="max-width:1000px;margin:30px auto;padding:0 20px;">
+    <div style="max-width:1000px;margin:30px auto;padding:0 20px;">
         <div style="background:#ffffff;border-radius:18px;padding:30px;border:1px solid #e5e5e5;">
-            <h2 style="margin:0 0 15px;font-size:22px;letter-spacing:1px;">About This Item</h2>
+            ${intro.value &&
+            intro.value !== 'null' &&
+            intro.value !== 'undefined' &&
+            intro.value.trim() !== '' ? `
+                <h2 style="margin:0 0 15px;font-size:22px;letter-spacing:1px;">
+                    About This Item
+                </h2>
+
+                <p style="margin:0;font-size:16px;line-height:1.8;color:#333;">
+                    ${escapeHtml(intro.value)}
+                </p>
+            ` : ''}
+
+            <h2 style="margin:15px 0 15px;font-size:22px;letter-spacing:1px;">Why Buy From Us?</h2>
             <p style="margin:0;font-size:16px;line-height:1.8;color:#333;">
-                ${escapeHtml(intro.value)}
+                <span style="display:block; margin-bottom:10px;">
+                    Reclaimed, checked & prepared for reuse.<br/>
+                </span>
+                <span style="display:block; margin-bottom:10px;">
+                    Unlike many used doors sold straight from building projects, we inspect our stock, check for missing or damaged parts, replace what's required and give every item a thorough clean.
+                </span>
+
+                <strong style="color:#12B981;">✓</strong> <b>Checked & inspected</b><br/>
+                <strong style="color:#12B981;">✓</strong> <b>Thoroughly cleaned</b><br/>
+                <strong style="color:#12B981;">✓</strong> <b>Prepared for its next home</b><br/>
             </p>
         </div>
     </div>
+
 
     <div style="max-width:1000px;margin:30px auto;padding:0 20px;">
         <div style="background:#ffffff;border-radius:18px;padding:30px;border:1px solid #e5e5e5;">
