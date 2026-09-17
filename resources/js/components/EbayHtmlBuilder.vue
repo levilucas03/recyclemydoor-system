@@ -299,7 +299,7 @@ const htmlOutput = computed(() => {
                     Traffic Door
                 </td>
                 <td style="padding:14px;border-bottom:1px solid #ececec;">
-                    ${escapeHtml(getAttribute('traffic-door'))}
+                    ${escapeHtml(getAttribute('traffic-door'))} (When viewing from the outside)
                 </td>
             </tr>
 
