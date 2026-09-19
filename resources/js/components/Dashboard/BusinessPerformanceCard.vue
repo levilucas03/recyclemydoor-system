@@ -99,9 +99,7 @@ const loadCustom = async () => {
 
 <template>
 
-       <pre class="mt-6 bg-white p-4">
-{{ dailyTrend }}
-</pre>
+       
 
     <div class="bg-white rounded-xl p-6 shadow mt-4">
 

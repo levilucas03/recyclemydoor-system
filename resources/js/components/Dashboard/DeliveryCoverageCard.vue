@@ -9,7 +9,7 @@ const money = (val) => {
 </script>
 
 <template>
-    <div class="bg-white rounded-xl p-6 shadow mt-4">
+    <div class="bg-white rounded-xl p-6 shadow">
 
         <h2 class="text-lg font-semibold mb-4">
             Delivery Coverage

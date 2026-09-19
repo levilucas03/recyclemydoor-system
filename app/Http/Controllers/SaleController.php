@@ -18,67 +18,866 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | FILTERS
+        |--------------------------------------------------------------------------
+        */
+
         $search = $request->search;
+        $status = $request->status;
+        $category = $request->category;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
 
-        $sales = Sale::with([
-                'contact',
-                'source',
-                'items.product',
-            ])
 
-            ->when($search, function ($query) use ($search) {
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER FUNCTION
+        |--------------------------------------------------------------------------
+        |
+        | We use this in a few places:
+        |
+        | 1. Main sales query
+        | 2. Status counts
+        | 3. Category counts
+        |
+        | This prevents us repeating all the search/date logic.
+        |
+        */
+
+        $applyFilters = function (
+            $query,
+            $includeStatus = true,
+            $includeCategory = true
+        ) use (
+            $search,
+            $status,
+            $category,
+            $startDate,
+            $endDate
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEARCH
+            |--------------------------------------------------------------------------
+            */
+
+            if ($search) {
 
                 $query->where(function ($q) use ($search) {
 
-                    // ---------------------
-                    // SALE ID
-                    // ---------------------
-                    $q->where('id', 'like', "%{$search}%");
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SALE ID
+                    |--------------------------------------------------------------------------
+                    */
 
-                    // ---------------------
-                    // CONTACT SEARCH
-                    // ---------------------
-                    $q->orWhereHas('contact', function ($contact) use ($search) {
+                    $q->where(
+                        'id',
+                        'like',
+                        "%{$search}%"
+                    );
 
-                        $contact
-                            ->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%")
 
-                            ->orWhereRaw(
-                                "CONCAT(first_name, ' ', last_name) LIKE ?",
-                                ["%{$search}%"]
-                            )
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CUSTOMER
+                    |--------------------------------------------------------------------------
+                    */
 
-                            ->orWhere('telephone', 'like', "%{$search}%")
-                            ->orWhere('mobile', 'like', "%{$search}%")
-                            ->orWhere('postcode', 'like', "%{$search}%");
-                    });
+                    $q->orWhereHas(
+                        'contact',
+                        function ($contact) use ($search) {
 
-                    // ---------------------
-                    // PRODUCT SKU SEARCH
-                    // ---------------------
-                    $q->orWhereHas('items.product', function ($product) use ($search) {
+                            $contact
+                                ->where(
+                                    'first_name',
+                                    'like',
+                                    "%{$search}%"
+                                )
 
-                        $product->where('sku', 'like', "%{$search}%");
+                                ->orWhere(
+                                    'last_name',
+                                    'like',
+                                    "%{$search}%"
+                                )
 
-                    });
+                                ->orWhereRaw(
+                                    "CONCAT(first_name, ' ', last_name) LIKE ?",
+                                    ["%{$search}%"]
+                                )
+
+                                ->orWhere(
+                                    'email',
+                                    'like',
+                                    "%{$search}%"
+                                )
+
+                                ->orWhere(
+                                    'telephone',
+                                    'like',
+                                    "%{$search}%"
+                                )
+
+                                ->orWhere(
+                                    'mobile',
+                                    'like',
+                                    "%{$search}%"
+                                )
+
+                                ->orWhere(
+                                    'postcode',
+                                    'like',
+                                    "%{$search}%"
+                                );
+
+                        }
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | PRODUCT
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $q->orWhereHas(
+                        'items.product',
+                        function ($product) use ($search) {
+
+                            $product
+                                ->where(
+                                    'sku',
+                                    'like',
+                                    "%{$search}%"
+                                )
+
+                                ->orWhere(
+                                    'title',
+                                    'like',
+                                    "%{$search}%"
+                                );
+
+                        }
+                    );
 
                 });
 
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STATUS
+            |--------------------------------------------------------------------------
+            */
+
+            if ($includeStatus && $status) {
+
+                $query->where(
+                    'status',
+                    $status
+                );
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CATEGORY
+            |--------------------------------------------------------------------------
+            */
+
+            if ($includeCategory && $category) {
+                $query->whereHas(
+                    'items.product.categories',
+                    function ($categoryQuery) use ($category) {
+
+                        $categoryQuery->where(
+                            'categories.id',
+                            $category
+                        );
+
+                    }
+                );
+            }       
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | DATE FROM
+            |--------------------------------------------------------------------------
+            */
+
+            if ($startDate) {
+
+                $query->whereDate(
+                    'invoice_date',
+                    '>=',
+                    $startDate
+                );
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | DATE TO
+            |--------------------------------------------------------------------------
+            */
+
+            if ($endDate) {
+
+                $query->whereDate(
+                    'invoice_date',
+                    '<=',
+                    $endDate
+                );
+
+            }
+
+
+            return $query;
+        };
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MAIN SALES QUERY
+        |--------------------------------------------------------------------------
+        */
+
+        $salesQuery = Sale::query()
+            ->with([
+
+                'contact',
+
+                'source',
+
+                'items.product' => function ($query) {
+
+                    $query->with([
+
+                        'primaryImage',
+
+                        'categories',
+
+                        'prices',
+
+                        'partAllocations',
+
+                    ]);
+
+                },
+
+            ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | APPLY ALL FILTERS
+        |--------------------------------------------------------------------------
+        */
+
+        $applyFilters(
+            $salesQuery,
+            true,
+            true
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUMMARY DATA
+        |--------------------------------------------------------------------------
+        |
+        | Get all matching sales BEFORE pagination.
+        |
+        | This means the figures at the top represent the entire filtered
+        | result rather than only the current page.
+        |
+        */
+
+        $summarySales = (clone $salesQuery)
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REVENUE
+        |--------------------------------------------------------------------------
+        */
+
+        $totalRevenue = (float) $summarySales
+            ->sum('total_amount');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCT SALE ITEMS
+        |--------------------------------------------------------------------------
+        */
+
+        $productItems = $summarySales
+
+            ->flatMap(function ($sale) {
+
+                return $sale->items;
+
             })
 
-            ->latest()
+            ->filter(function ($item) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Include product and other
+                |--------------------------------------------------------------------------
+                |
+                | We previously found that some of your product-type sale lines
+                | can also be stored as "other".
+                |
+                | However, for cost calculations below, we still require an
+                | attached product.
+                |
+                */
+
+                return in_array(
+                    $item->type,
+                    ['product', 'other']
+                );
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUAL PRODUCT ITEMS
+        |--------------------------------------------------------------------------
+        |
+        | Only lines with an attached Product can contribute product cost,
+        | refurb cost and product quantity.
+        |
+        */
+
+        $attachedProductItems = $productItems
+            ->filter(function ($item) {
+
+                return $item->product !== null;
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCTS SOLD
+        |--------------------------------------------------------------------------
+        */
+
+        $productsSold = $attachedProductItems
+            ->sum(function ($item) {
+
+                return (float) ($item->qty ?? 1);
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCT PURCHASE COST
+        |--------------------------------------------------------------------------
+        */
+
+        $productCost = $attachedProductItems
+            ->sum(function ($item) {
+
+                $product = $item->product;
+
+                if (!$product) {
+                    return 0;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | PURCHASE PRICE
+                |--------------------------------------------------------------------------
+                */
+
+                $purchasePrice = (float) optional(
+                    $product
+                        ->prices
+                        ->firstWhere(
+                            'type',
+                            'purchase'
+                        )
+                )->price;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | QUANTITY
+                |--------------------------------------------------------------------------
+                */
+
+                $qty = (float) (
+                    $item->qty ?? 1
+                );
+
+
+                return $purchasePrice * $qty;
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REFURB / PART COST
+        |--------------------------------------------------------------------------
+        */
+
+        $refurbCost = $attachedProductItems
+            ->sum(function ($item) {
+
+                $product = $item->product;
+
+                if (!$product) {
+                    return 0;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | PARTS ALLOCATED TO PRODUCT
+                |--------------------------------------------------------------------------
+                */
+
+                $partsCost = (float) $product
+                    ->partAllocations
+                    ->sum('cost_allocated');
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Quantity
+                |--------------------------------------------------------------------------
+                |
+                | Normally your products are unique physical stock items, so qty
+                | will usually be 1.
+                |
+                */
+
+                $qty = (float) (
+                    $item->qty ?? 1
+                );
+
+
+                return $partsCost * $qty;
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL COST
+        |--------------------------------------------------------------------------
+        */
+
+        $totalCost =
+            $productCost +
+            $refurbCost;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GROSS PROFIT
+        |--------------------------------------------------------------------------
+        */
+
+        $grossProfit =
+            $totalRevenue -
+            $totalCost;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MARGIN
+        |--------------------------------------------------------------------------
+        */
+
+        $margin = $totalRevenue > 0
+
+            ? (
+                $grossProfit /
+                $totalRevenue
+            ) * 100
+
+            : 0;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS COUNTS
+        |--------------------------------------------------------------------------
+        |
+        | Important:
+        |
+        | We apply:
+        | - search
+        | - category
+        | - dates
+        |
+        | But NOT the selected status.
+        |
+        | This means if you click "Complete", the sidebar still shows the
+        | number of Draft / Cancelled / etc sales.
+        |
+        */
+
+        $statusQuery = Sale::query();
+
+
+        $applyFilters(
+            $statusQuery,
+            false,
+            true
+        );
+
+
+        $statusCounts = $statusQuery
+
+            ->selectRaw(
+                'status, COUNT(*) as total'
+            )
+
+            ->groupBy('status')
+
+            ->pluck(
+                'total',
+                'status'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORY COUNTS
+        |--------------------------------------------------------------------------
+        |
+        | Here we apply:
+        |
+        | - search
+        | - status
+        | - dates
+        |
+        | But NOT category.
+        |
+        | Therefore the user can still see all available category counts even
+        | when one category has been selected.
+        |
+        */
+
+        $categorySalesQuery = Sale::query()
+            ->with([
+                'items.product.categories'
+            ]);
+
+
+        $applyFilters(
+            $categorySalesQuery,
+            true,
+            false
+        );
+
+
+        $categorySales = $categorySalesQuery
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUILD CATEGORY COUNTS
+        |--------------------------------------------------------------------------
+        */
+
+        $categories = $categorySales
+
+            ->flatMap(function ($sale) {
+
+                return $sale->items;
+
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | Must actually have a product
+            |--------------------------------------------------------------------------
+            */
+
+            ->filter(function ($item) {
+
+                return $item->product !== null;
+
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | Turn each SaleItem into category entries
+            |--------------------------------------------------------------------------
+            |
+            | A product may belong to more than one category.
+            |
+            */
+
+            ->flatMap(function ($item) {
+
+                return $item->product->categories->map(
+                    function ($category) use ($item) {
+
+                        return [
+
+                            'category' => $category,
+
+                            'qty' => (int) (
+                                $item->qty ?? 1
+                            ),
+
+                        ];
+
+                    }
+                );
+
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | Group by category
+            |--------------------------------------------------------------------------
+            */
+
+            ->groupBy(function ($item) {
+
+                return $item['category']->id;
+
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | Build sidebar data
+            |--------------------------------------------------------------------------
+            */
+
+            ->map(function ($items) {
+
+                $category = $items
+                    ->first()['category'];
+
+                return [
+
+                    'id' => $category->id,
+
+                    'name' => $category->name,
+
+                    'count' => $items->sum('qty'),
+
+                ];
+
+            })
+
+            ->sortByDesc('count')
+
+            ->values();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PAGINATED SALES
+        |--------------------------------------------------------------------------
+        */
+
+        $sales = $salesQuery
+
+            /*
+            |--------------------------------------------------------------------------
+            | Sort by actual invoice date
+            |--------------------------------------------------------------------------
+            */
+
+            ->orderByDesc('invoice_date')
+
+            /*
+            |--------------------------------------------------------------------------
+            | Secondary sort
+            |--------------------------------------------------------------------------
+            */
+
+            ->orderByDesc('id')
+
             ->paginate(20)
+
             ->withQueryString();
 
-        return Inertia::render('Sales/Index', [
-            'sales' => $sales,
 
-            'filters' => [
-                'search' => $search,
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN
+        |--------------------------------------------------------------------------
+        */
+
+        return Inertia::render(
+            'Sales/Index',
+            [
+
+                /*
+                |--------------------------------------------------------------------------
+                | SALES
+                |--------------------------------------------------------------------------
+                */
+
+                'sales' => $sales,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SUMMARY CARDS
+                |--------------------------------------------------------------------------
+                */
+
+                'summary' => [
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Revenue
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'revenue' => round(
+                        $totalRevenue,
+                        2
+                    ),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Number of sales
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'sales_count' => $summarySales
+                        ->count(),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Products sold
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'products_sold' => (int) $productsSold,
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Stock purchase cost
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'product_cost' => round(
+                        $productCost,
+                        2
+                    ),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Refurbishment / parts
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'refurb_cost' => round(
+                        $refurbCost,
+                        2
+                    ),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Total actual cost
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'total_cost' => round(
+                        $totalCost,
+                        2
+                    ),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Gross profit
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'gross_profit' => round(
+                        $grossProfit,
+                        2
+                    ),
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Margin
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'margin' => round(
+                        $margin,
+                        1
+                    ),
+
+                ],
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SIDEBAR STATUS COUNTS
+                |--------------------------------------------------------------------------
+                */
+
+                'statusCounts' => $statusCounts,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SIDEBAR CATEGORY COUNTS
+                |--------------------------------------------------------------------------
+                */
+
+                'categories' => $categories,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ACTIVE FILTERS
+                |--------------------------------------------------------------------------
+                */
+
+                'filters' => [
+
+                    'search' => $search,
+
+                    'status' => $status,
+
+                    'category' => $category,
+
+                    'start_date' => $startDate,
+
+                    'end_date' => $endDate,
+
+                ],
+
             ]
-        ]);
+        );
     }
 
     public function create()
@@ -475,6 +1274,197 @@ class SaleController extends Controller
             return back()->with('error', $e->getMessage());
 
         // }
+    }
+
+    private function applySalesIndexFilters(
+        $query,
+        Request $request,
+        bool $includeStatus = true,
+        bool $includeCategory = true
+    ) {
+
+        $search = $request->search;
+
+        $status = $request->status;
+
+        $category = $request->category;
+
+        $startDate = $request->start_date;
+
+        $endDate = $request->end_date;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SEARCH
+        |--------------------------------------------------------------------------
+        */
+
+        $query->when($search, function ($query) use ($search) {
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where(
+                    'id',
+                    'like',
+                    "%{$search}%"
+                );
+
+
+                $q->orWhereHas(
+                    'contact',
+                    function ($contact) use ($search) {
+
+                        $contact
+                            ->where(
+                                'first_name',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhere(
+                                'last_name',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhere(
+                                'email',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhereRaw(
+                                "CONCAT(first_name, ' ', last_name) LIKE ?",
+                                ["%{$search}%"]
+                            )
+
+                            ->orWhere(
+                                'telephone',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhere(
+                                'mobile',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhere(
+                                'postcode',
+                                'like',
+                                "%{$search}%"
+                            );
+
+                    }
+                );
+
+
+                $q->orWhereHas(
+                    'items.product',
+                    function ($product) use ($search) {
+
+                        $product
+                            ->where(
+                                'sku',
+                                'like',
+                                "%{$search}%"
+                            )
+
+                            ->orWhere(
+                                'title',
+                                'like',
+                                "%{$search}%"
+                            );
+
+                    }
+                );
+
+            });
+
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        if ($includeStatus) {
+
+            $query->when(
+                $status,
+                fn ($query) =>
+                    $query->where(
+                        'status',
+                        $status
+                    )
+            );
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORY
+        |--------------------------------------------------------------------------
+        */
+
+        if ($includeCategory) {
+
+            $query->when(
+                $category,
+                function ($query) use ($category) {
+
+                    $query->whereHas(
+                        'items.product',
+                        function ($product) use ($category) {
+
+                            $product->where(
+                                'category_id',
+                                $category
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATE
+        |--------------------------------------------------------------------------
+        */
+
+        $query->when(
+            $startDate,
+            fn ($query) =>
+                $query->whereDate(
+                    'invoice_date',
+                    '>=',
+                    $startDate
+                )
+        );
+
+
+        $query->when(
+            $endDate,
+            fn ($query) =>
+                $query->whereDate(
+                    'invoice_date',
+                    '<=',
+                    $endDate
+                )
+        );
+
+
+        return $query;
     }
 
 }

@@ -1,281 +1,431 @@
 <script setup>
-import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue'
+import Dropdown from '@/Components/Dropdown.vue'
+import DropdownLink from '@/Components/DropdownLink.vue'
+import NavLink from '@/Components/NavLink.vue'
+import { Link } from '@inertiajs/vue3'
 
-const showingNavigationDropdown = ref(false);
+import {
+    HomeIcon,
+    ShoppingCartIcon,
+    CubeIcon,
+    ArrowDownTrayIcon,
+    TagIcon,
+    TruckIcon,
+    WrenchScrewdriverIcon,
+    FireIcon,
+} from '@heroicons/vue/24/outline'
+
+
+const mobileNavigation = [
+    {
+        name: 'Home',
+        route: 'dashboard',
+        active: 'dashboard',
+        icon: HomeIcon,
+    },
+    {
+        name: 'Sales',
+        route: 'sales.index',
+        active: 'sales.*',
+        icon: ShoppingCartIcon,
+    },
+    {
+        name: 'Products',
+        route: 'products.index',
+        active: 'products.*',
+        icon: CubeIcon,
+    },
+    {
+        name: 'Purchases',
+        route: 'purchases.index',
+        active: 'purchases.*',
+        icon: ArrowDownTrayIcon,
+    },
+    {
+        name: 'Listings',
+        route: 'listings.index',
+        active: 'listings.*',
+        icon: TagIcon,
+    },
+    {
+        name: 'Routes',
+        route: 'transport.index',
+        active: 'transport.*',
+        icon: TruckIcon,
+    },
+    {
+        name: 'Parts',
+        route: 'parts.index',
+        active: 'parts.*',
+        icon: WrenchScrewdriverIcon,
+    },
+    {
+        name: 'Fuel',
+        route: 'fuel-logs.index',
+        active: 'fuel-logs.*',
+        icon: FireIcon,
+    },
+]
 </script>
 
+
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                class="border-b border-gray-100 bg-white"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboards
-                                </NavLink>
-                                 <NavLink
-                                    :href="route('purchases.index')"
-                                    :active="route().current('purchases.index')"
-                                >
-                                    Purchases
-                                </NavLink>
-                                <NavLink
-                                    :href="route('sales.index')"
-                                    :active="route().current('sales.index')"
-                                >
-                                    Sales
-                                </NavLink>
-                                <NavLink
-                                    :href="route('products.index')"
-                                    :active="route().current('products.index')"
-                                >
-                                    Products
-                                </NavLink>
-                                
-                                <NavLink
-                                    :href="route('listings.index')"
-                                    :active="route().current('listings.index')"
-                                >
-                                    Listings
-                                </NavLink>
-                                <NavLink
-                                    :href="route('fuel-logs.index')"
-                                    :active="route().current('fuel-logs.index')"
-                                >
-                                    Fuel Logs
-                                </NavLink>
-                                 <NavLink
-                                    :href="route('transport.index')"
-                                    :active="route().current('transport.index')"
-                                >
-                                    Transport
-                                </NavLink>
-                                <NavLink
-                                    :href="route('parts.index')"
-                                    :active="route().current('parts.index')"
-                                >
-                                    Parts
-                                </NavLink>
-                            </div>
+    <div class="min-h-screen bg-gray-100">
+
+        <!-- =========================================================
+             DESKTOP NAVIGATION
+        ========================================================== -->
+
+        <!-- desktop -->
+        <nav class="hidden border-b border-gray-100 bg-white lg:block">
+
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+                <div class="flex h-16 justify-between">
+
+                    <div class="flex">
+
+                        <!-- LOGO -->
+
+                        <div class="flex shrink-0 items-center">
+
+                            <Link :href="route('dashboard')">
+
+                                <ApplicationLogo
+                                    class="block h-9 w-auto fill-current text-gray-800"
+                                />
+
+                            </Link>
+
                         </div>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+
+                        <!-- NAVIGATION -->
+
+                        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+
+                            <NavLink
+                                :href="route('dashboard')"
+                                :active="route().current('dashboard')"
+                            >
+                                Dashboard
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('purchases.index')"
+                                :active="route().current('purchases.*')"
+                            >
+                                Purchases
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('sales.index')"
+                                :active="route().current('sales.*')"
+                            >
+                                Sales
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('products.index')"
+                                :active="route().current('products.*')"
+                            >
+                                Products
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('listings.index')"
+                                :active="route().current('listings.*')"
+                            >
+                                Listings
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('fuel-logs.index')"
+                                :active="route().current('fuel-logs.*')"
+                            >
+                                Fuel Logs
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('transport.index')"
+                                :active="route().current('transport.*')"
+                            >
+                                Transport
+                            </NavLink>
+
+                            <NavLink
+                                :href="route('parts.index')"
+                                :active="route().current('parts.*')"
+                            >
+                                Parts
+                            </NavLink>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACCOUNT -->
+
+                    <div class="hidden sm:ms-6 sm:flex sm:items-center">
+
+                        <div class="relative ms-3">
+
+                            <Dropdown
+                                align="right"
+                                width="48"
+                            >
+
+                                <template #trigger>
+
+                                    <span class="inline-flex rounded-md">
+
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition hover:text-gray-700 focus:outline-none"
+                                        >
+
+                                            {{ $page.props.auth.user.name }}
+
+                                            <svg
+                                                class="-me-0.5 ms-2 h-4 w-4"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"
+                                                />
+                                            </svg>
 
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
+                                        </button>
 
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                         <DropdownLink
-                                            :href="route('listing-platforms.index')"
-                                        >
-                                            Listing Platforms
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
+                                    </span>
+
+                                </template>
+
+
+                                <template #content>
+
+                                    <DropdownLink
+                                        :href="route('profile.edit')"
+                                    >
+                                        Profile
+                                    </DropdownLink>
+
+                                    <DropdownLink
+                                        :href="route('listing-platforms.index')"
+                                    >
+                                        Listing Platforms
+                                    </DropdownLink>
+
+                                    <DropdownLink
+                                        :href="route('logout')"
+                                        method="post"
+                                        as="button"
+                                    >
+                                        Log Out
+                                    </DropdownLink>
+
+                                </template>
+
+                            </Dropdown>
+
                         </div>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
                     </div>
+
                 </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
+            </div>
+
+        </nav>
+
+
+        <!-- =========================================================
+             MOBILE NAVIGATION RAIL
+        ========================================================== -->
+
+        <aside
+            class="
+                fixed
+                inset-y-0
+                left-0
+                z-50
+                w-[74px]
+                border-r
+                border-gray-200
+                bg-white
+                lg:hidden
+            "
+        >
+
+            <!-- LOGO -->
+
+            <div
+                class="
+                    flex
+                    h-16
+                    items-center
+                    justify-center
+                    border-b
+                    border-gray-100
+                "
+            >
+
+                <Link :href="route('dashboard')">
+
+                    <ApplicationLogo
+                        class="h-8 w-8 fill-current text-gray-900"
+                    />
+
+                </Link>
+
+            </div>
+
+
+            <!-- ICON NAV -->
+
+            <nav
+                class="
+                    flex
+                    h-[calc(100vh-4rem)]
+                    flex-col
+                    items-center
+                    gap-1
+                    overflow-y-auto
+                    px-2
+                    py-3
+                "
+            >
+
+                <Link
+                    v-for="item in mobileNavigation"
+                    :key="item.name"
+
+                    :href="route(item.route)"
+
+                    class="
+                        group
+                        flex
+                        w-full
+                        flex-col
+                        items-center
+                        justify-center
+                        rounded-xl
+                        py-2
+                        text-center
+                        transition
+                    "
+
+                    :class="
+                        route().current(item.active)
+                            ? 'text-gray-900'
+                            : 'text-gray-500 hover:text-gray-900'
+                    "
                 >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('products.index')"
-                            :active="route().current('products.*')"
-                        >
-                            Products
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('purchases.index')"
-                            :active="route().current('purchases.*')"
-                        >
-                            Purchases
-                        </ResponsiveNavLink>
 
-                         <ResponsiveNavLink
-                            :href="route('sales.index')"
-                            :active="route().current('sales.*')"
-                        >
-                            Sales
-                        </ResponsiveNavLink>
+                    <!-- ICON BACKGROUND -->
 
-                        <ResponsiveNavLink
-                            :href="route('fuel-logs.index')"
-                            :active="route().current('fuel-logs.*')"
-                        >
-                            Fuel
-                        </ResponsiveNavLink>
-
-                        <ResponsiveNavLink
-                            :href="route('transport.index')"
-                            :active="route().current('transport.*')"
-                        >
-                            Transport
-                        </ResponsiveNavLink>
-
-                       
-                    </div>
-
-                    <!-- Responsive Settings Options -->
                     <div
-                        class="border-t border-gray-200 pb-1 pt-4"
-                    >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                        </div>
+                        class="
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
+                            rounded-xl
+                            transition
+                        "
 
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
+                        :class="
+                            route().current(item.active)
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'group-hover:bg-gray-100'
+                        "
+                    >
+
+                        <component
+                            :is="item.icon"
+                            class="h-6 w-6"
+                        />
+
                     </div>
-                </div>
+
+
+                    <!-- LABEL -->
+
+                    <span
+                        class="
+                            mt-1
+                            max-w-full
+                            truncate
+                            text-[10px]
+                            font-medium
+                            leading-tight
+                        "
+                    >
+                        {{ item.name }}
+                    </span>
+
+                </Link>
+
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
+        </aside>
 
-            <!-- Page Content -->
-            <main>
-                <slot />
-            </main>
+
+        <!-- =========================================================
+             EVERYTHING TO THE RIGHT OF MOBILE NAV
+        ========================================================== -->
+
+        <div class="min-h-screen sm:ml-0">
+
+            <!-- MOBILE OFFSET -->
+
+            <div class="ml-[74px] lg:ml-0">
+
+                <!-- PAGE HEADER -->
+
+                <header
+                    v-if="$slots.header"
+                    class="bg-white shadow"
+                >
+
+                    <div
+                        class="
+                            mx-auto
+                            max-w-7xl
+                            px-4
+                            py-5
+                            sm:px-6
+                            lg:px-8
+                        "
+                    >
+
+                        <slot name="header" />
+
+                    </div>
+
+                </header>
+
+
+                <!-- PAGE -->
+
+                <main>
+
+                    <slot />
+
+                </main>
+
+            </div>
+
         </div>
+
     </div>
+
 </template>
