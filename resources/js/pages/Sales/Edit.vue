@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ProductSearchModal from '@/Components/ProductSearchModal.vue'
 import axios from 'axios'
@@ -209,6 +209,8 @@ function submit() {
 </script>
 
 <template>
+
+    <Head :title="`Edit ${$selectedContact}`" />
 
 <AuthenticatedLayout>
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router, useForm, Link } from '@inertiajs/vue3'
+import { Head, router, useForm, Link } from '@inertiajs/vue3'
 import { debounce } from 'lodash'
 import draggable from 'vuedraggable'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
@@ -263,6 +263,8 @@ watch(
 </script>
 
 <template>
+    <Head :title="`Edit ${form.title}`" />
+
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold">Edit {{ form.title }}</h2>
