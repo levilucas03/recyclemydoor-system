@@ -363,31 +363,29 @@ class AnalyticsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $activitySales = SaleItem::query()
-            ->whereIn('type', ['product', 'other'])
-            ->whereHas('sale', function ($query) use ($startDate, $endDate) {
+        $activitySales = Sale::query()
 
-                $query
-                    ->whereDate(
-                        'invoice_date',
-                        '>=',
-                        $startDate->toDateString()
-                    )
-                    ->whereDate(
-                        'invoice_date',
-                        '<=',
-                        $endDate->toDateString()
-                    )
-                    ->where(function ($query) {
+        ->whereDate(
+            'invoice_date',
+            '>=',
+            $startDate->toDateString()
+        )
 
-                        $query
-                            ->whereNull('status')
-                            ->orWhere('status', '!=', 'cancelled');
+        ->whereDate(
+            'invoice_date',
+            '<=',
+            $endDate->toDateString()
+        )
 
-                    });
+        ->where(function ($query) {
 
-            })
-            ->sum('total');
+            $query
+                ->whereNull('status')
+                ->orWhere('status', '!=', 'cancelled');
+
+        })
+
+        ->sum('total_amount');
 
 
         /*
