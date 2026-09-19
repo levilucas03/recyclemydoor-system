@@ -253,8 +253,8 @@ function contactName(contact) {
         .join(' ') || 'No customer'
 }
 
-function addressLines(contact) {
-    if (!contact) {
+function addressLines(sale) {
+    if (!sale) {
         return []
     }
 
@@ -264,12 +264,12 @@ function addressLines(contact) {
     |--------------------------------------------------------------------------
     */
 
+    console.log(sale);
+
     return [
-        contact.address_line_1 ?? contact.address1 ?? contact.address,
-        contact.address_line_2 ?? contact.address2,
-        contact.town ?? contact.city,
-        contact.county,
-        contact.postcode,
+        sale.address_1 ?? '',
+        sale.postcode,
+        
     ].filter(Boolean)
 }
 
@@ -966,7 +966,7 @@ function statusClasses(status) {
                                     <div
                                         v-for="sale in sales.data"
                                         :key="sale.id"
-                                        class="grid cursor-pointer grid-cols-[110px_minmax(0,1fr)_70px_110px_130px_80px] gap-4 px-4 py-5 transition hover:bg-gray-50"
+                                        class="grid cursor-pointer grid-cols-[110px_minmax(0,1fr)_70px_110px_130px_80px] gap-4 px-4 py-3 transition hover:bg-gray-50"
                                         @click="goToSale(sale)"
                                     >
 
@@ -1022,62 +1022,82 @@ function statusClasses(status) {
 
                                             <div
                                                 v-if="productItems(sale).length"
-                                                class="mt-3 space-y-3"
+                                                class="mt-3"
                                             >
+                                                <div class="flex items-start gap-3">
 
-                                                <div
-                                                    v-for="item in productItems(sale)"
-                                                    :key="item.id"
-                                                    class="flex gap-3"
-                                                >
+                                                    <!-- FIRST 3 PRODUCTS -->
 
-                                                    <!-- IMAGE -->
+                                                    <div
+                                                        v-for="item in productItems(sale).slice(0, 3)"
+                                                        :key="item.id"
+                                                        class="flex min-w-0 max-w-[220px] items-center gap-2"
+                                                    >
 
-                                                    <div class="shrink-0">
+                                                        <!-- IMAGE -->
 
-                                                        <img
-                                                            v-if="productImage(item.product)"
-                                                            :src="'/storage/' + productImage(item.product)"
-                                                            :alt="item.product?.title"
-                                                            class="h-20 w-24 rounded-lg border border-gray-200 object-cover"
-                                                        >
+                                                        <div class="shrink-0">
 
-                                                        <div
-                                                            v-else
-                                                            class="flex h-20 w-24 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-400"
-                                                        >
-                                                            No image
+                                                            <img
+                                                                v-if="productImage(item.product)"
+                                                                :src="productImage(item.product)"
+                                                                :alt="item.product?.title"
+                                                                class="h-14 w-14 rounded-md border border-gray-200 object-cover"
+                                                            >
+
+                                                            <div
+                                                                v-else
+                                                                class="flex h-14 w-14 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-[9px] text-gray-400"
+                                                            >
+                                                                No image
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <!-- PRODUCT -->
+
+                                                        <div class="min-w-0">
+
+                                                            <div
+                                                                class="line-clamp-2 text-xs font-medium leading-4 text-gray-900"
+                                                            >
+                                                                {{
+                                                                    item.product?.title ||
+                                                                    item.description ||
+                                                                    'Product'
+                                                                }}
+                                                            </div>
+
+                                                            <div
+                                                                v-if="item.product?.sku"
+                                                                class="mt-0.5 text-[10px] text-gray-400"
+                                                            >
+                                                                {{ item.product.sku }}
+                                                            </div>
+
+                                                            <div
+                                                                v-if="Number(item.qty) > 1"
+                                                                class="mt-0.5 text-[10px] text-gray-500"
+                                                            >
+                                                                Qty {{ item.qty }}
+                                                            </div>
+
                                                         </div>
 
                                                     </div>
 
 
-                                                    <!-- PRODUCT INFO -->
+                                                    <!-- MORE PRODUCTS -->
 
-                                                    <div class="min-w-0">
-
-                                                        <div class="font-medium leading-snug text-gray-900">
-                                                            {{
-                                                                item.product?.title ||
-                                                                item.description ||
-                                                                'Product'
-                                                            }}
-                                                        </div>
-
-                                                        <div
-                                                            v-if="item.product?.sku"
-                                                            class="mt-1 text-xs text-gray-400"
-                                                        >
-                                                            {{ item.product.sku }}
-                                                        </div>
-
-                                                        <div
-                                                            v-if="Number(item.qty) > 1"
-                                                            class="mt-1 text-xs font-medium text-gray-500"
-                                                        >
-                                                            Qty {{ item.qty }}
-                                                        </div>
-
+                                                    <div
+                                                        v-if="productItems(sale).length > 3"
+                                                        class="flex h-14 min-w-[58px] shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-2"
+                                                    >
+                                                        <span class="text-xs font-semibold text-gray-500">
+                                                            +{{ productItems(sale).length - 3 }}
+                                                            more
+                                                        </span>
                                                     </div>
 
                                                 </div>
@@ -1103,11 +1123,11 @@ function statusClasses(status) {
                                                 class="mt-3 text-xs leading-5 text-gray-500"
                                             >
 
-                                                <div
-                                                    v-for="line in addressLines(sale.contact)"
-                                                    :key="line"
+                                               <div
+                                                    v-if="addressLines(sale.contact).length"
+                                                    class="mt-2 truncate text-[11px] text-gray-500"
                                                 >
-                                                    {{ line }}
+                                                    {{ addressLines(sale.contact).join(', ') }}
                                                 </div>
 
                                             </div>
