@@ -1040,7 +1040,7 @@ function statusClasses(status) {
 
                                                             <img
                                                                 v-if="productImage(item.product)"
-                                                                :src="productImage(item.product)"
+                                                                :src="'/storage/' + productImage(item.product)"
                                                                 :alt="item.product?.title"
                                                                 class="h-14 w-14 rounded-md border border-gray-200 object-cover"
                                                             >
