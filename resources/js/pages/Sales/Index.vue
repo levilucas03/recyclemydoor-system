@@ -227,29 +227,7 @@ function productQuantity(sale) {
 */
 
 function productImage(product) {
-    if (!product) {
-        return null
-    }
-
-    const image =
-        product.primary_image ??
-        product.primaryImage
-
-    if (!image) {
-        return null
-    }
-
-    if (typeof image === 'string') {
-        return image
-    }
-
-    return (
-        image.url ??
-        image.path ??
-        image.image_url ??
-        image.image ??
-        null
-    )
+    return product?.primary_image?.path ?? null
 }
 
 /*
@@ -1059,7 +1037,7 @@ function statusClasses(status) {
 
                                                         <img
                                                             v-if="productImage(item.product)"
-                                                            :src="productImage(item.product)"
+                                                            :src="'/storage/' + productImage(item.product)"
                                                             :alt="item.product?.title"
                                                             class="h-20 w-24 rounded-lg border border-gray-200 object-cover"
                                                         >
