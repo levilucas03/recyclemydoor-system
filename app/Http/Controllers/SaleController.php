@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\Source;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Enums\SaleStatus;
 use App\Models\Product;
@@ -249,7 +250,10 @@ class SaleController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $user = Auth::user();
+
         $salesQuery = Sale::query()
+            ->where('user_id', $user->id)
             ->with([
 
                 'contact',
@@ -538,7 +542,9 @@ class SaleController extends Controller
         |
         */
 
-        $statusQuery = Sale::query();
+        $statusQuery = Sale::query()
+
+        ->where('user_id', $user->id);
 
 
         $applyFilters(
@@ -581,6 +587,7 @@ class SaleController extends Controller
         */
 
         $categorySalesQuery = Sale::query()
+            ->where('user_id', $user->id)
             ->with([
                 'items.product.categories'
             ]);
@@ -1036,6 +1043,12 @@ class SaleController extends Controller
 
     public function edit(Sale $sale)
     {
+
+        abort_unless(
+            $sale->user_id === auth()->id(),
+            403
+        );
+
         $sale->load([
             'contact',
             'items.product.primaryImage',

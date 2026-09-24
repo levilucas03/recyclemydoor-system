@@ -1144,7 +1144,7 @@ function statusClasses(status) {
 
                                         <!-- TOTAL -->
 
-                                        <div class="text-right">
+                                        <!-- <div class="text-right">
 
                                             <div class="text-sm font-bold text-gray-900">
                                                 {{ money(sale.total_amount) }}
@@ -1164,7 +1164,7 @@ function statusClasses(status) {
                                                 Unpaid
                                             </div>
 
-                                        </div>
+                                        </div> -->
 
 
                                         <!-- STATUS -->
@@ -1386,7 +1386,7 @@ function statusClasses(status) {
                                                 {{ sale.source.name }}
                                             </span>
 
-                                            <span
+                                            <!-- <span
                                                 v-if="sale.fully_paid"
                                                 class="text-xs font-medium text-green-600"
                                             >
@@ -1398,7 +1398,7 @@ function statusClasses(status) {
                                                 class="text-xs text-gray-400"
                                             >
                                                 Unpaid
-                                            </span>
+                                            </span> -->
 
                                         </div>
 

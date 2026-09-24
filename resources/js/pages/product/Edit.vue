@@ -260,6 +260,180 @@ watch(
     },
     { deep: true }
 )
+
+// ---------------------
+// MARKETPLACE DESCRIPTION
+// ---------------------
+
+const copiedDescription = ref(false)
+
+const findName = (items, id) => {
+    return items?.find(item => Number(item.id) === Number(id))?.name ?? ''
+}
+
+const findNestedName = (items, id) => {
+    for (const parent of items ?? []) {
+
+        if (Number(parent.id) === Number(id)) {
+            return parent.name
+        }
+
+        const child = parent.children?.find(
+            child => Number(child.id) === Number(id)
+        )
+
+        if (child) {
+            return child.name
+        }
+    }
+
+    return ''
+}
+
+const marketplaceDescription = computed(() => {
+
+    const material = findName(props.materials, form.material_id)
+    const colour = findName(props.colours, form.colour_id)
+    const condition = findName(props.conditions, form.condition_id)
+    const trafficDoor = findName(props.trafficDoors, form.traffic_door_id)
+    const opening = findName(props.openings, form.opening_id)
+
+    const configuration = findNestedName(
+        props.configurations,
+        form.configuration_id
+    )
+
+    const categoryNames = (form.category_ids ?? [])
+        .map(id => findNestedName(props.categories, id))
+        .filter(Boolean)
+
+    const productType =
+        categoryNames[0] ||
+        configuration ||
+        form.title ||
+        'item'
+
+    const intro = [
+        condition,
+        colour,
+        material,
+        productType
+    ]
+        .filter(Boolean)
+        .join(' ')
+
+    const lines = []
+
+    // Intro
+    lines.push(`Selling a ${intro}.`)
+
+    if (opening) {
+        lines.push(`Opening: ${opening}`)
+    }
+
+    lines.push('')
+
+    // Size
+    if (form.width || form.height || form.depth) {
+
+        lines.push('Size:')
+
+        if (form.width) {
+            lines.push(`Width: ${formatMeasurement(form.width)}`)
+        }
+
+        if (form.height) {
+            lines.push(`Height: ${formatMeasurement(form.height)}`)
+        }
+
+        if (form.depth) {
+            lines.push(`Depth: ${formatMeasurement(form.depth)}`)
+        }
+
+        lines.push('')
+    }
+
+    // Details
+    const details = []
+
+    if (configuration) {
+        details.push(`Configuration: ${configuration}`)
+    }
+
+    if (trafficDoor) {
+        details.push(`Main traffic door: ${trafficDoor}`)
+    }
+
+    if (colour) {
+        details.push(`Colour: ${colour}`)
+    }
+
+    if (material) {
+        details.push(`Material: ${material}`)
+    }
+
+    if (condition) {
+        details.push(`Condition: ${condition}`)
+    }
+
+    if (details.length) {
+        lines.push(...details)
+        lines.push('')
+    }
+
+    // Existing description
+    if (form.description?.trim()) {
+        lines.push(form.description.trim())
+        lines.push('')
+    }
+
+    // Delivery
+    lines.push(
+        'Delivery available from £40. We can usually deliver cheaper than most private couriers, or you are welcome to collect.'
+    )
+
+    lines.push('')
+
+    // Website
+    lines.push(
+        'You can also view and purchase this item securely through our website at reclaimworks.co.uk.'
+    )
+
+    return lines.join('\n')
+})
+
+
+function formatMeasurement(value) {
+
+    if (!value) return ''
+
+    const number = Number(value)
+
+    // Assuming your database dimensions are mm
+    if (!Number.isNaN(number)) {
+
+        const cm = number / 10
+
+        return `${number}mm (${cm % 1 === 0 ? cm : cm.toFixed(1)}cm)`
+    }
+
+    return value
+}
+
+
+async function copyMarketplaceDescription() {
+
+    await navigator.clipboard.writeText(
+        marketplaceDescription.value
+    )
+
+    copiedDescription.value = true
+
+    setTimeout(() => {
+        copiedDescription.value = false
+    }, 2000)
+}
+ 
 </script>
 
 <template>
@@ -515,6 +689,42 @@ watch(
                 ></textarea>
                 
             </div>
+
+            <!-- MARKETPLACE DESCRIPTION -->
+
+<div class="max-w-5xl mx-auto mt-6 p-6 bg-white shadow rounded-xl">
+
+    <div class="flex items-center justify-between gap-4 mb-4">
+
+        <div>
+            <h2 class="font-semibold">
+                Marketplace Description
+            </h2>
+
+            <p class="text-sm text-gray-500 mt-1">
+                Quick plain-text description for Facebook,
+                Gumtree and other marketplaces.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            @click="copyMarketplaceDescription"
+            class="shrink-0 bg-[#173A2F] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90"
+        >
+            {{ copiedDescription ? '✓ Copied' : 'Copy Description' }}
+        </button>
+
+    </div>
+
+
+    <textarea
+        :value="marketplaceDescription"
+        readonly
+        class="w-full min-h-[300px] border rounded-lg p-4 text-sm leading-6 bg-gray-50"
+    ></textarea>
+
+</div>
 
             
 

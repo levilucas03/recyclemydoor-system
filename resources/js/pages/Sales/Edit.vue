@@ -210,7 +210,7 @@ function submit() {
 
 <template>
 
-    <Head :title="`Edit ${$selectedContact}`" />
+    <Head :title="`Edit ${ selectedContact?.first_name} Sale`" />
 
 <AuthenticatedLayout>
 
@@ -310,7 +310,7 @@ function submit() {
                 class="mt-3 bg-green-100 p-3 rounded flex justify-between items-center"
             >
                 <span>
-                    {{ selectedContact.name }}
+                    {{ selectedContact.name }} - {{ selectedContact?.mobile }}
                 </span>
 
                 <button @click="clearContact">

@@ -16,6 +16,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
 use App\Http\Controllers\EbaySyncController;
 
+use App\Http\Controllers\Auth\RegisteredUserController;
+
 use App\Http\Controllers\ProductPartAllocationController;
 
 
@@ -38,6 +40,15 @@ use App\Http\Controllers\TransportController;
 //         'phpVersion' => PHP_VERSION,
 //     ]);
 // });
+
+Route::middleware('guest')->group(function () {
+
+    Route::get('/register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+
+});
 
 
 

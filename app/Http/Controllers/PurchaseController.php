@@ -24,7 +24,12 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        $purchases = Purchase::with([
+
+     $user = Auth::user();
+
+        $purchases = Purchase::where('user_id', $user->id)
+        
+            ->with([
                 'contact',
                 'source',
                 'products.prices',
@@ -222,6 +227,11 @@ class PurchaseController extends Controller
      */
     public function edit(Purchase $purchase)
     {
+        abort_unless(
+            $purchase->user_id === auth()->id(),
+            403
+        );
+        
         $purchase->load([
             'contact',
             'products.categories',
