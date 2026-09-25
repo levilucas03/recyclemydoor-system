@@ -242,5 +242,6 @@ Route::post('/ebay/sync-sales', [EbaySyncController::class, 'syncSales'])
 
 
     });
+    
 
 require __DIR__.'/auth.php';

@@ -291,6 +291,29 @@ function statusClasses(status) {
             return 'bg-blue-100 text-blue-700'
     }
 }
+
+const syncingWebsite = ref(false)
+
+function syncWebsiteSales() {
+
+    if (syncingWebsite.value) {
+        return
+    }
+
+    syncingWebsite.value = true
+
+    router.post(
+        route('woocommerce.sync-sales'),
+        {},
+        {
+            preserveScroll: true,
+
+            onFinish: () => {
+                syncingWebsite.value = false
+            }
+        }
+    )
+}
 </script>
 
 
@@ -318,6 +341,54 @@ function statusClasses(status) {
 
 
                 <div class="flex items-center gap-2">
+
+                    <button
+    type="button"
+    @click="syncWebsiteSales"
+    :disabled="syncingWebsite"
+    class="inline-flex items-center gap-2 px-4 py-2 bg-[#173A2F] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+>
+    <svg
+        v-if="!syncingWebsite"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+    >
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v6h6M20 20v-6h-6M5.64 18.36A9 9 0 0020 12M4 12a9 9 0 0114.36-6.36"
+        />
+    </svg>
+
+    <svg
+        v-else
+        class="w-4 h-4 animate-spin"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+    >
+        <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+        />
+
+        <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+        />
+    </svg>
+
+    {{ syncingWebsite ? 'Syncing...' : 'Sync Website Sales' }}
+</button>
 
                     <button
                         type="button"

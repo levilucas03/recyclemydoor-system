@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Services\WordPress\WooCommerceOrderService;
+use App\Services\WordPress\WooCommerceSaleSyncService;
 
 class WooCommerceSyncController extends Controller
 {
-    public function test(
-        WooCommerceOrderService $orderService
+    public function syncSales(
+        WooCommerceOrderService $orderService,
+        WooCommerceSaleSyncService $saleSyncService
     ) {
         $orderService->sync();
 
+        $saleSyncService->sync();
+
         return back()->with(
             'success',
-            'WooCommerce orders imported.'
+            'Website sales synced successfully.'
         );
     }
 }
