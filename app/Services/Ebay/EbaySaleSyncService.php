@@ -24,7 +24,7 @@ class EbaySaleSyncService
 
                     $sale = Sale::create([
                         'contact_id' => $contact?->id,
-
+                        'user_id' => '1',
                         'ebay_id' => $ebayOrder->ebay_order_id,
                         'status' => $status = $this->mapSaleStatus($ebayOrder),
                         'invoice_date' => optional($ebayOrder->ordered_at)->toDateString(),

@@ -15,6 +15,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelLogController;
 use App\Http\Controllers\EbaySyncController;
+use App\Http\Controllers\WooCommerceSyncController;
+
 
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -230,6 +232,15 @@ Route::post('/ebay/sync-sales', [EbaySyncController::class, 'syncSales'])
     ->name('ebay.sync-sales');
 
 
-});
+
+    Route::post(
+        '/woocommerce/sync-sales',
+        [WooCommerceSyncController::class, 'syncSales']
+    )
+        ->middleware('auth')
+        ->name('woocommerce.sync-sales');
+
+
+    });
 
 require __DIR__.'/auth.php';
