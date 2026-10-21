@@ -191,14 +191,7 @@ watch(
     { immediate: true }
 )
 
-form._method = 'PUT'
 
-router.post(route('products.update', form.id), {
-    ...form,
-    _method: 'PUT',
-}, {
-    forceFormData: true,
-})
 
 // ---------------------
 // AUTOSAVE
