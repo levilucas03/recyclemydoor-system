@@ -56,6 +56,8 @@ const form = useForm({
     configuration_id: props.product.configuration_id,
     category_ids: props.product.categories?.map(c => c.id) || [],
 
+    images: [],
+
 
     purchase_price: getPrice('purchase'),
     website_price: getPrice('website'),
