@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { Head, router, useForm, Link } from '@inertiajs/vue3'
 import { debounce } from 'lodash'
 import draggable from 'vuedraggable'
+import axios from 'axios'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import GenerateTitle from '@/components/GenerateTitle.vue'
 import EbayHtmlBuilder from '@/components/EbayHtmlBuilder.vue'
@@ -196,13 +197,20 @@ watch(
 // ---------------------
 // AUTOSAVE
 // ---------------------
+
 const autoSave = debounce(() => {
-    router.post(route('products.update', { product: form.id }), form, {
-        preserveScroll: true,
-        preserveState: true,
-        replace: true,
-    })
+    router.put(
+        route('products.update', { product: form.id }),
+        form.data(),
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            only: ['product'],
+        }
+    )
 }, 800)
+
 
 watch(() => ({ ...form }), autoSave, { deep: true })
 
@@ -253,6 +261,80 @@ watch(
     },
     { deep: true }
 )
+
+
+const selectedImages = ref([])
+const uploadingImages = ref(false)
+const uploadProgress = ref(0)
+const uploadMessage = ref('')
+const uploadErrors = ref([])
+
+const selectImages = (event) => {
+    selectedImages.value = Array.from(event.target.files ?? [])
+    uploadMessage.value = ''
+    uploadErrors.value = []
+}
+
+const uploadProductImages = async () => {
+    if (!selectedImages.value.length || uploadingImages.value) return
+
+    uploadingImages.value = true
+    uploadProgress.value = 0
+    uploadMessage.value = ''
+    uploadErrors.value = []
+
+    const files = [...selectedImages.value]
+    let uploaded = 0
+
+    try {
+        for (const file of files) {
+            try {
+                const response = await axios.post(
+                    route('products.images.raw', props.product.id),
+                    file,
+                    {
+                        headers: {
+                            'Content-Type': 'application/octet-stream',
+                        },
+                    }
+                )
+
+                if (response.data.image) {
+                    galleryImages.value.push(response.data.image)
+                    uploaded++
+                }
+            } catch (error) {
+                uploadErrors.value.push(
+                    `${file.name}: ${
+                        error.response?.data?.message ??
+                        error.message
+                    }`
+                )
+            }
+
+            uploadProgress.value = Math.round(
+                ((uploaded + uploadErrors.value.length) / files.length) * 100
+            )
+        }
+
+        if (uploaded > 0) {
+            uploadMessage.value = `${uploaded} image(s) uploaded successfully.`
+
+            // Refresh gallery and primary image from Laravel
+            router.reload({
+                only: ['product'],
+                preserveScroll: true,
+                preserveState: true,
+            })
+        }
+
+        selectedImages.value = []
+
+    } finally {
+        uploadingImages.value = false
+    }
+}
+
 
 // ---------------------
 // MARKETPLACE DESCRIPTION
@@ -603,19 +685,75 @@ async function copyMarketplaceDescription() {
                         <option v-for="o in openings" :key="o.id" :value="o.id">{{ o.name }}</option>
                     </select>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Gallery Images
-                        </label>
+                    
+<div class="mb-6 rounded-xl border bg-gray-50 p-5">
 
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            @change="e => form.images = Array.from(e.target.files)"
-                            class="w-full border rounded p-2"
-                        />
-                    </div>
+    <h3 class="font-semibold text-gray-900 mb-2">
+        Upload Product Images
+    </h3>
+
+    <p class="text-sm text-gray-500 mb-4">
+        Upload images separately without saving the product.
+        Maximum 10MB per image.
+    </p>
+
+    <input
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        @change="selectImages"
+        class="w-full border rounded-lg p-3 bg-white"
+    />
+
+    <div
+        v-if="selectedImages.length"
+        class="mt-3 text-sm text-gray-600"
+    >
+        {{ selectedImages.length }} image(s) selected
+    </div>
+
+    <button
+        type="button"
+        @click="uploadProductImages"
+        :disabled="uploadingImages || !selectedImages.length"
+        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white
+               px-5 py-2 rounded-lg font-medium
+               disabled:opacity-50"
+    >
+        {{ uploadingImages ? 'Uploading...' : 'Upload Images' }}
+    </button>
+
+    <div v-if="uploadingImages" class="mt-4">
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div
+                class="bg-blue-600 h-2 rounded-full transition-all"
+                :style="{ width: uploadProgress + '%' }"
+            ></div>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-2">
+            {{ uploadProgress }}% completed
+        </p>
+    </div>
+
+    <p
+        v-if="uploadMessage"
+        class="mt-3 text-sm text-green-600"
+    >
+        {{ uploadMessage }}
+    </p>
+
+    <div
+        v-if="uploadErrors.length"
+        class="mt-3 text-sm text-red-600"
+    >
+        <p v-for="(error, index) in uploadErrors" :key="index">
+            {{ error }}
+        </p>
+    </div>
+
+</div>
+
 
                     <div v-if="galleryImages.length" class="mt-6">
                         <div class="flex items-center justify-between mb-4">

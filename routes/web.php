@@ -247,6 +247,12 @@ Route::post('/ebay/sync-sales', [EbaySyncController::class, 'syncSales'])
     });
 
 
+    Route::post(
+    '/products/{product}/images/raw',
+    [ProductController::class, 'uploadRawImage']
+)->middleware('auth')->name('products.images.raw');
+
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/test-upload', function () {

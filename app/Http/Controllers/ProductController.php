@@ -238,7 +238,6 @@ class ProductController extends Controller
             'height' => 'required|numeric',
             'depth' => 'required|numeric',
 
-            'images.*' => ['nullable', 'image', 'max:10240'],
 
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -303,60 +302,7 @@ class ProductController extends Controller
 
         $product->categories()->sync($request->category_ids ?? []);
 
-        if ($request->hasFile('image')) {
-
-            // delete old primary image (optional but recommended)
-            $oldImage = $product->images()->where('is_primary', true)->first();
-
-            if ($oldImage) {
-                Storage::disk('public')->delete($oldImage->path);
-                $oldImage->delete();
-            }
-
-            // store new image
-            $path = app(ImageOptimizerService::class)
-                ->storeProductImage($request->file('image'));
-
-            // save to DB
-            $product->images()->create([
-                'path' => $path,
-                'is_primary' => true,
-                'sort_order' => 0,
-            ]);
-        }
-
-       if ($request->hasFile('images')) {
-
-            $currentMaxOrder = $product->images()->max('sort_order') ?? 0;
-
-            foreach ($request->file('images') as $image) {
-
-                // Optional duplicate detection
-                $hash = md5_file($image->getRealPath());
-
-                $exists = $product->images()
-                    ->where('file_hash', $hash)
-                    ->exists();
-
-                if ($exists) {
-                    continue;
-                }
-
-                $path = app(ImageOptimizerService::class)
-                    ->storeProductImage(
-                        $image,
-                        $product->title
-                    );
-
-                $product->images()->create([
-                    'path' => $path,
-                    'file_hash' => $hash,
-                    'alt_text' => $product->title,
-                    'sort_order' => ++$currentMaxOrder,
-                    'is_primary' => ! $product->images()->exists(),
-                ]);
-            }
-        }
+       
     }
 
     protected function savePrice(Product $product, $type, $value)
@@ -433,8 +379,109 @@ class ProductController extends Controller
 
         Product::whereIn('id', $request->ids)->delete();
 
-        return redirect()->route('products.index')->with('success', 'Selected products deleted successfully.');
+        return redirect()->back()->with('success', 'Product updated.');
     }
+
+
+
+
+public function uploadRawImage(Request $request, Product $product)
+{
+    // Only allow the product owner
+    abort_unless($product->user_id === auth()->id(), 403);
+
+    $data = $request->getContent();
+
+    // Maximum 10MB
+    if (strlen($data) === 0 || strlen($data) > 10 * 1024 * 1024) {
+        return response()->json([
+            'message' => 'Image must be between 1 byte and 10MB.'
+        ], 422);
+    }
+
+    $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($data);
+
+    $extensions = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
+    if (!isset($extensions[$mime]) || !@getimagesizefromstring($data)) {
+        return response()->json([
+            'message' => 'Invalid image format.'
+        ], 422);
+    }
+
+    // Duplicate detection
+    $hash = md5($data);
+
+    $existing = $product->images()
+        ->where('file_hash', $hash)
+        ->first();
+
+    if ($existing) {
+        return response()->json([
+            'message' => 'This image already exists.',
+            'duplicate' => true,
+        ], 409);
+    }
+
+    // Create temporary file for existing optimizer
+    $temporaryPath = tempnam(sys_get_temp_dir(), 'product_');
+
+    if ($temporaryPath === false) {
+        return response()->json([
+            'message' => 'Unable to create temporary file.'
+        ], 500);
+    }
+
+    try {
+        if (file_put_contents($temporaryPath, $data) === false) {
+            throw new \RuntimeException('Unable to write temporary image.');
+        }
+
+        $file = new \Illuminate\Http\UploadedFile(
+            $temporaryPath,
+            'product.' . $extensions[$mime],
+            $mime,
+            null,
+            true
+        );
+
+        // Use existing image optimizer
+        $path = app(ImageOptimizerService::class)
+            ->storeProductImage($file, $product->title);
+
+        $nextOrder = ($product->images()->max('sort_order') ?? -1) + 1;
+
+        $isPrimary = !$product->images()->exists();
+
+        try {
+            $image = $product->images()->create([
+                'path' => $path,
+                'file_hash' => $hash,
+                'alt_text' => $product->title,
+                'sort_order' => $nextOrder,
+                'is_primary' => $isPrimary,
+            ]);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($path);
+            throw $e;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Image uploaded successfully.',
+            'image' => $image,
+        ]);
+
+    } finally {
+        if (file_exists($temporaryPath)) {
+            unlink($temporaryPath);
+        }
+    }
+}
 
     
 
