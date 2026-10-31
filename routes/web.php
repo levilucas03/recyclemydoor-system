@@ -17,6 +17,9 @@ use App\Http\Controllers\FuelLogController;
 use App\Http\Controllers\EbaySyncController;
 use App\Http\Controllers\WooCommerceSyncController;
 
+use App\Http\Controllers\TestUploadController;
+
+
 
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -242,6 +245,23 @@ Route::post('/ebay/sync-sales', [EbaySyncController::class, 'syncSales'])
 
 
     });
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/test-upload', function () {
+        return Inertia::render('TestUpload');
+    });
+
+    Route::post('/test-upload/multipart', [
+        TestUploadController::class, 'multipart'
+    ]);
+
+    Route::post('/test-upload/raw', [
+        TestUploadController::class, 'raw'
+    ]);
+});
+
     
 
 require __DIR__.'/auth.php';
